@@ -7,7 +7,7 @@
  */
 
 // !!! SALIN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI !!!
-const GAS_API_URL = ""; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyCctiDjoWcgTPHqDghNC-HUfuUSuLHa0nqoSX384HuAtrtujumwsr-DpylQyVK6gYA/exec"; 
 
 const appEngine = {
   isSimulation: false,
