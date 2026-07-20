@@ -40,3 +40,60 @@ Agar seluruh arsitektur backend `Kode.gs` dapat berjalan dengan lancar tanpa err
 | Kolom A | Kolom B | Kolom C | Kolom D | Kolom E | Kolom F |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **laporan_id** | **tanggal_agenda** | **nama_kegiatan** | **deskripsi** | **foto_drive_id** | **submitted_by** |
+
+# 📑 PVS DATABASE AND CONFIGURATION SCHEMATICS v5.6
+
+Dokumentasi spesifikasi struktur data relasional Google Sheets untuk mendukung fungsionalitas core logic `Kode.gs`. 
+
+### 📐 Panduan Penamaan Sheet & Header Kolom (Baris 1)
+
+#### 1. Sheet: `app_settings`
+*   **Kolom A:** `id_setting`
+*   **Kolom B:** `nama_calon_kades`
+*   **Kolom C:** `drive_id_foto_login`
+*   **Kolom D:** `drive_id_foto_dashboard`
+*   **Kolom E:** `updated_at`
+
+#### 2. Sheet: `users`
+*   **Kolom A:** `user_id`
+*   **Kolom B:** `username`
+*   **Kolom C:** `password_hash`
+*   **Kolom D:** `nama_lengkap`
+*   **Kolom E:** `role`
+*   **Kolom F:** `tps_id`
+*   **Kolom G:** `status_aktif`
+
+#### 3. Sheet: `data_dpt`
+*   **Kolom A:** `nik`
+*   **Kolom B:** `no_kk`
+*   **Kolom C:** `nama_warga`
+*   **Kolom F:** `tps_id`
+*   **Kolom E:** `dusun`
+*   **Kolom F:** `rt`
+*   **Kolom G:** `rw`
+
+#### 4. Sheet: `warga_voters`
+*   **Kolom A:** `voter_id`
+*   **Kolom B:** `nik`
+*   **Kolom C:** `klasifikasi`
+*   **Kolom D:** `input_by_user_id`
+*   **Kolom E:** `created_at`
+
+#### 5. Sheet: `tps_real_count`
+*   **Kolom A:** `tps_id`
+*   **Kolom B:** `nama_tps`
+*   **Kolom C:** `total_dpt_tps`
+*   **Kolom D:** `suara_calon_kita`
+*   **Kolom E:** `suara_lawan_1`
+*   **Kolom F:** `suara_lawan_2`
+*   **Kolom G:** `suara_tidak_sah`
+*   **Kolom H:** `saksi_user_id`
+*   **Kolom I:** `status_lock_suara`
+
+#### 6. Sheet: `agenda_laporan`
+*   **Kolom A:** `laporan_id`
+*   **Kolom B:** `tanggal_agenda`
+*   **Kolom C:** `nama_kegiatan`
+*   **Kolom D:** `deskripsi`
+*   **Kolom E:** `foto_drive_id`
+*   **Kolom F:** `submitted_by`
