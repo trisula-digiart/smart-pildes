@@ -1,7 +1,4 @@
-/* ==========================================================
-   PILKADES VICTORY SYSTEM - FRONTEND INTERFACE CUSTOM FRAMEWORK
-   Version : 5.6 Visual Supremacy [Industrial High-End Layout Spec]
-   ========================================================== */
+/* STREAMING_CHUNK: Configuring premium design tokens and typography... */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
@@ -11,8 +8,8 @@
   --color-gold-hover: #AA8B2C;
   --gradient-premium: linear-gradient(135deg, #0B192C 0%, #1E3E62 100%);
   --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #AA8B2C 100%);
-  --shadow-soft: 0 10px 30px -5px rgba(11, 25, 44, 0.04), 0 5px 15px -4px rgba(11, 25, 44, 0.02);
-  --shadow-premium: 0 20px 45px -12px rgba(11, 25, 44, 0.12);
+  --shadow-soft: 0 10px 35px -5px rgba(11, 25, 44, 0.05), 0 5px 15px -4px rgba(11, 25, 44, 0.02);
+  --shadow-premium: 0 20px 50px -12px rgba(11, 25, 44, 0.15);
 }
 
 body {
@@ -22,6 +19,7 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* STREAMING_CHUNK: Creating custom design supremacy classes... */
 .bg-navy-dark { background-color: var(--color-navy-dark); }
 .bg-navy-light { background-color: var(--color-navy-light); }
 .bg-gradient-premium { background: var(--gradient-premium); }
@@ -29,12 +27,11 @@ body {
 .text-gold { color: var(--color-gold); }
 .border-gold { border-color: var(--color-gold); }
 
-/* Premium Visual Layout Specs Container Cards */
 .card-premium {
   background: #FFFFFF;
-  border: 1px solid rgba(226, 232, 240, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: var(--shadow-soft);
-  border-radius: 1.5rem; /* rounded-3xl */
+  border-radius: 1.5rem;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -43,7 +40,7 @@ body {
   transform: translateY(-3px);
 }
 
-/* Custom Webkit scrollbar optimizations for dense analytical components */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -52,21 +49,21 @@ body {
   background: #F8FAFC;
 }
 ::-webkit-scrollbar-thumb {
-  background: #E2E8F0;
+  background: #CBD5E1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #CBD5E1;
+  background: #94A3B8;
 }
 
-/* Anti-forced zoom viewport rule enforcement */
+/* Viewport Scale Lock Engine */
 @viewport {
   user-scalable: no;
   initial-scale: 1.0;
   maximum-scale: 1.0;
 }
 
-/* Print Sheet Styles Management */
+/* STREAMING_CHUNK: Setting print style overrides... */
 @media print {
   body { background: white; color: black; }
   .no-print, nav, sidebar, button, #setting-form, header, footer { display: none !important; }
