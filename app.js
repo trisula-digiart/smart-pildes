@@ -224,6 +224,20 @@ const appEngine = {
       }
     },
 
+    bindTimsesForm: function() {
+      const logoutBtn = document.getElementById("btn-timses-logout");
+      if (logoutBtn) {
+        logoutBtn.removeAttribute("onclick");
+        logoutBtn.addEventListener("click", function(e) {
+          e.preventDefault();
+          appEngine.auth.logout();
+        });
+        console.log("⚡ TRISULA KERNEL: Tombol logout dinamis berhasil dikunci.");
+      } else {
+        setTimeout(() => appEngine.auth.bindTimsesForm(), 100);
+      }
+    },
+
     submit: async function(e) {
       if (e) e.preventDefault();
       const btn = document.getElementById("btn-login-submit");
@@ -351,7 +365,33 @@ const appEngine = {
   },
 
   field: {
-    initFieldView: function() {}
+    initFieldView: function() {
+      const profileName = document.getElementById("timses-profile-name");
+      if (profileName && appEngine.session.user) {
+        profileName.innerText = appEngine.session.user.nama_lengkap;
+      }
+      appEngine.auth.bindTimsesForm();
+    },
+    submitVoter: async function(e) {
+      if (e) e.preventDefault();
+      const alertBox = document.getElementById("field-alert");
+      const nik = document.getElementById("field-voter-nik").value;
+      const klasifikasi = document.getElementById("field-voter-class").value;
+
+      const res = await appEngine.request("submitVoter", { nik, klasifikasi });
+
+      if (alertBox) {
+        alertBox.className = `p-4 rounded-2xl text-xs font-extrabold mb-4 shadow-sm ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
+        alertBox.innerHTML = res.status === 'success' 
+          ? `<i class="fa-solid fa-circle-check mr-2"></i> ${res.message}`
+          : `<i class="fa-solid fa-triangle-exclamation mr-2"></i> ${res.message}`;
+        alertBox.classList.remove("hidden");
+      }
+
+      if (res.status === "success") {
+        document.getElementById("form-voter-submission").reset();
+      }
+    }
   },
 
   utils: {
