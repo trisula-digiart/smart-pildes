@@ -354,10 +354,15 @@ const appEngine = {
         modeBadge.innerText = this.isSimulation ? "MODE SIMULASI (OFFLINE)" : "LIVE SYNC ACTIVE";
       }
 
+      // REVISI 2: MEMPERKUAT INTERAKSI HEADER AGAR ANTI-EVENT-LOSS
       this.bindHeaderInteractions();
 
+      const diagnosticsBox = document.getElementById("admin-diagnostics-alert");
+      if(diagnosticsBox) diagnosticsBox.classList.add("hidden");
+
       const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
-      if (res.status === "success") {
+      
+      if (res && res.status === "success") {
         appEngine.session.dbCache = res;
         this.renderMetrics(res.metrics);
         this.renderTPSRecapTable(res.zoning);
@@ -373,36 +378,46 @@ const appEngine = {
             document.getElementById("admin-profile-img").src = res.branding.drive_id_foto_paslon;
           }
         }
+      } else {
+        // Diagnostik error jika koneksi ke GAS dibatasi / salah ID spreadsheet
+        if(diagnosticsBox) {
+          diagnosticsBox.classList.remove("hidden");
+          document.getElementById("admin-diagnostics-text").innerText = `⚠️ DIAGNOSTIK BACKEND: ${res ? res.message : "Tidak dapat terhubung ke URL Google App Script"}`;
+        }
       }
     },
 
     bindHeaderInteractions: function() {
-      // REVISI 2: MEMPERKUAT EVENT INTERACTIVE HEADER AGAR ANTI-EVENT-LOSS
-      const logoutBtn = document.getElementById("btn-admin-logout");
-      if (logoutBtn) {
-        const clone = logoutBtn.cloneNode(true);
-        logoutBtn.replaceWith(clone);
-        clone.addEventListener("click", function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          appEngine.auth.logout();
-        });
-      }
-
+      // Perbaikan logout, dropdown, dan arrow click
       const profileTrigger = document.getElementById("btn-admin-profile-trigger");
       const dropdownBox = document.getElementById("box-admin-dropdown");
+      
       if (profileTrigger && dropdownBox) {
         const clone = profileTrigger.cloneNode(true);
         profileTrigger.replaceWith(clone);
+        
+        // Re-fetch dropdown dan arrow anak dari hasil kloning
+        const newDropdown = clone.querySelector("#box-admin-dropdown");
         clone.addEventListener("click", function(e) {
           e.preventDefault();
           e.stopPropagation();
-          dropdownBox.classList.toggle("hidden");
+          newDropdown.classList.toggle("hidden");
           const notifBox = document.getElementById("box-admin-notification");
           if (notifBox) notifBox.classList.add("hidden");
         });
+
+        // Event click untuk tombol keluar sistem di dalam hasil kloning
+        const logoutBtn = clone.querySelector("#btn-admin-logout");
+        if(logoutBtn) {
+          logoutBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            appEngine.auth.logout();
+          });
+        }
       }
 
+      // Kloning tombol notifikasi
       const notifTrigger = document.getElementById("btn-admin-notification");
       const notifBox = document.getElementById("box-admin-notification");
       if (notifTrigger && notifBox) {
@@ -416,8 +431,8 @@ const appEngine = {
         });
       }
 
+      // Kloning tombol sinkronisasi
       const syncBtn = document.getElementById("btn-admin-sync");
-      const syncIcon = document.getElementById("icon-admin-sync");
       if (syncBtn) {
         const clone = syncBtn.cloneNode(true);
         syncBtn.replaceWith(clone);
@@ -436,6 +451,7 @@ const appEngine = {
         });
       }
 
+      // Menutup modal otomatis saat klik di luar
       document.addEventListener("click", function() {
         const drop = document.getElementById("box-admin-dropdown");
         const boxN = document.getElementById("box-admin-notification");
@@ -444,16 +460,42 @@ const appEngine = {
       });
     },
 
-    syncData: async function() {
-      const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
-      if (res.status === "success") {
-        appEngine.session.dbCache = res;
-        this.renderMetrics(res.metrics);
-        this.renderTPSRecapTable(res.zoning);
-        this.renderZoningChart(res.metrics);
-        this.populateFilterDropdowns(res);
-        this.renderAnalyticsTable();
-      }
+    syncData: async function() { await this.initDashboard(); },
+
+    renderMetrics: function(metrics) {
+      document.getElementById("stat-total-dpt").innerText = metrics.total_dpt;
+      document.getElementById("stat-total-voters").innerText = metrics.total_terdata;
+      document.getElementById("stat-realcount-progress").innerText = metrics.pro_percentage + "%";
+    },
+
+    renderTPSRecapTable: function(zoning) {
+      const tbody = document.querySelector("#table-rekap-tps tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      zoning.forEach(zone => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-4 font-bold text-slate-800">${zone.zone}</td>
+            <td class="p-4 text-center">${zone.dpt}</td>
+            <td class="p-4 text-center text-emerald-600 font-black">${zone.pro}</td>
+            <td class="p-4 text-center text-slate-700">${zone.kontra}</td>
+            <td class="p-4 text-center text-slate-700">${zone.ragu}</td>
+          </tr>`;
+      });
+    },
+
+    renderZoningChart: function(metrics) {
+      const canvas = document.getElementById("chart-real-count-admin");
+      if (!canvas) return;
+      if (window.myPVSChart) window.myPVSChart.destroy();
+      window.myPVSChart = new Chart(canvas.getContext("2d"), {
+        type: "doughnut",
+        data: {
+          labels: ["PRO", "KONTRA", "RAGU-RAGU"],
+          datasets: [{ data: [metrics.pro, metrics.kontra, metrics.ragu], backgroundColor: ["#0B192C", "#EF4444", "#F59E0B"] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
     },
 
     populateFilterDropdowns: function(data) {
@@ -479,12 +521,12 @@ const appEngine = {
       this.activeSubTab = subTabId;
       
       document.querySelectorAll(".sub-tab-btn").forEach(btn => {
-        btn.className = "sub-tab-btn px-4 py-2 text-xs font-bold rounded-xl border border-transparent text-slate-600 hover:text-navy-dark transition";
+        btn.className = "sub-tab-btn px-5 py-3 text-xs font-bold rounded-xl border border-transparent text-slate-600 hover:text-navy-dark transition";
       });
       
       const activeBtn = document.getElementById(`subtab-btn-${subTabId.replace('subtab-', '')}`);
       if (activeBtn) {
-        activeBtn.className = "sub-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl transition shadow-sm bg-navy-dark text-gold";
+        activeBtn.className = "sub-tab-btn px-5 py-3 text-xs font-extrabold rounded-xl transition shadow-sm bg-navy-dark text-gold";
       }
 
       const boxKK = document.getElementById("filter-box-kk");
@@ -520,9 +562,9 @@ const appEngine = {
       body.innerHTML = "";
       const selectedZone = document.getElementById("filter-select-rtrw").value;
 
-      // REVISI 1: MEMPERBAIKI RENDERING DATA DPT MASTER AGAR SINKRON DENGAN DATA SHEET
+      // REVISI 1: RENDERING DINAMIS DATA DPT SECARA UTUH LANGSUNG DARI MEMORI SPREADSHEET CACHE
       if (this.activeSubTab === "subtab-dpt") {
-        head.innerHTML = `<tr><th class="p-3">Nama Warga</th><th class="p-3">NIK</th><th class="p-3">Nomor KK</th><th class="p-3">Dusun - RT/RW</th></tr>`;
+        head.innerHTML = `<tr><th class="p-4 text-[11px] tracking-wider">Nama Warga</th><th class="p-4 text-[11px] tracking-wider">NIK</th><th class="p-4 text-[11px] tracking-wider">Nomor KK</th><th class="p-4 text-[11px] tracking-wider">Dusun - RT/RW</th></tr>`;
         const filterKK = document.getElementById("filter-input-kk") ? document.getElementById("filter-input-kk").value.trim().toLowerCase() : "";
         
         const dptList = cachedData.dptMaster || [];
@@ -532,16 +574,16 @@ const appEngine = {
           if (filterKK !== "" && !item.no_kk.toLowerCase().includes(filterKK)) return;
 
           body.innerHTML += `
-            <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-              <td class="p-3 font-bold text-slate-800">${item.nama_warga}</td>
-              <td class="p-3 font-mono text-slate-500">${item.nik}</td>
-              <td class="p-3 font-mono text-slate-700 font-bold">${item.no_kk}</td>
-              <td class="p-3">${zoneKey}</td>
+            <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition">
+              <td class="p-4 font-extrabold text-slate-800 text-sm">${item.nama_warga}</td>
+              <td class="p-4 font-mono text-slate-500 font-bold text-sm">${item.nik}</td>
+              <td class="p-4 font-mono text-slate-700 font-black text-sm">${item.no_kk}</td>
+              <td class="p-4 text-sm font-semibold text-slate-600">${zoneKey}</td>
             </tr>`;
         });
       } 
       else if (this.activeSubTab === "subtab-voter-records") {
-        head.innerHTML = `<tr><th class="p-3">Nama Warga Pemilih</th><th class="p-3">NIK</th><th class="p-3 text-center">Orientasi</th><th class="p-3">Zonasi RT/RW</th><th class="p-3">Petugas Lapangan</th></tr>`;
+        head.innerHTML = `<tr><th class="p-4 text-[11px] tracking-wider">Nama Warga Pemilih</th><th class="p-4 text-[11px] tracking-wider">NIK</th><th class="p-4 text-center text-[11px] tracking-wider">Orientasi</th><th class="p-4 text-[11px] tracking-wider">Zonasi RT/RW</th><th class="p-4 text-[11px] tracking-wider">Petugas Lapangan</th></tr>`;
         const selectedVote = document.getElementById("filter-select-vote").value;
         const selectedTimses = document.getElementById("filter-select-timses").value;
 
@@ -556,42 +598,41 @@ const appEngine = {
           if (v.klasifikasi === "KONTRA") badgeColor = "bg-red-100 text-red-700";
 
           body.innerHTML += `
-            <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-              <td class="p-3 font-bold text-slate-800">${v.nama}</td>
-              <td class="p-3 font-mono text-slate-500">${v.nik}</td>
-              <td class="p-3 text-center"><span class="px-2.5 py-1 rounded-md text-[10px] ${badgeColor}">${v.klasifikasi}</span></td>
-              <td class="p-3">${zoneKey}</td>
-              <td class="p-3 font-semibold text-navy-light"><i class="fa-solid fa-user-check mr-1 text-gold"></i>${v.input_by}</td>
+            <tr class="border-b border-slate-100 hover:bg-slate-50/50 transition">
+              <td class="p-4 font-extrabold text-slate-800 text-sm">${v.nama}</td>
+              <td class="p-4 font-mono text-slate-500 font-bold text-sm">${v.nik}</td>
+              <td class="p-4 text-center"><span class="px-3 py-1.5 rounded-lg text-xs font-black ${badgeColor}">${v.klasifikasi}</span></td>
+              <td class="p-4 text-sm font-semibold text-slate-600">${zoneKey}</td>
+              <td class="p-4 font-bold text-navy-light text-sm"><i class="fa-solid fa-user-check mr-1.5 text-gold text-xs"></i>${v.input_by}</td>
             </tr>`;
         });
       }
       else if (this.activeSubTab === "subtab-rt-rw") {
-        head.innerHTML = `<tr><th class="p-3">Zonasi Dusun RT/RW</th><th class="p-3 text-center">Target DPT</th><th class="p-3 text-center text-emerald-600">PRO</th><th class="p-3 text-center text-red-500">KONTRA</th><th class="p-3 text-center text-amber-600">RAGU</th></tr>`;
+        head.innerHTML = `<tr><th class="p-4 text-[11px] tracking-wider">Zonasi Dusun RT/RW</th><th class="p-4 text-center text-[11px] tracking-wider">Target DPT</th><th class="p-4 text-center text-emerald-600 text-[11px] tracking-wider">PRO</th><th class="p-4 text-center text-red-500 text-[11px] tracking-wider">KONTRA</th><th class="p-4 text-center text-amber-600 text-[11px] tracking-wider">RAGU</th></tr>`;
         cachedData.zoning.forEach(z => {
-          body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${z.zone}</td><td class="p-3 text-center">${z.dpt}</td><td class="p-3 text-center text-emerald-600 font-black">${z.pro}</td><td class="p-3 text-center text-red-500">${z.kontra}</td><td class="p-3 text-center text-amber-600">${z.ragu}</td></tr>`;
+          body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50/50 transition"><td class="p-4 font-extrabold text-slate-800 text-sm">${z.zone}</td><td class="p-4 text-center font-bold text-sm text-slate-700">${z.dpt}</td><td class="p-4 text-center text-emerald-600 font-black text-sm">${z.pro}</td><td class="p-4 text-center text-red-500 font-black text-sm">${z.kontra}</td><td class="p-4 text-center text-amber-600 font-black text-sm">${z.ragu}</td></tr>`;
         });
       }
       else if (this.activeSubTab === "subtab-performance") {
-        head.innerHTML = `<tr><th class="p-3">Nama Petugas Lapangan</th><th class="p-3 text-center">Total Input Suara</th><th class="p-3 text-center">Status Keaktifan</th></tr>`;
+        head.innerHTML = `<tr><th class="p-4 text-[11px] tracking-wider">Nama Petugas Lapangan</th><th class="p-4 text-center text-[11px] tracking-wider">Total Input Suara</th><th class="p-4 text-center text-[11px] tracking-wider">Status Keaktifan</th></tr>`;
         if(cachedData.timsesList) {
           cachedData.timsesList.forEach(t => {
             const count = cachedData.voters.filter(v => v.input_by_user_id === t.user_id).length;
-            body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${t.nama_lengkap} (${t.username})</td><td class="p-3 text-center font-black text-navy-dark">${count} Data Pemilih</td><td class="p-3 text-center"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">ACTIVE LIVE</span></td></tr>`;
+            body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50/50 transition"><td class="p-4 font-extrabold text-slate-800 text-sm">${t.nama_lengkap} (${t.username})</td><td class="p-4 text-center font-black text-navy-dark text-sm">${count} Data Pemilih</td><td class="p-4 text-center"><span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-black">ACTIVE LIVE</span></td></tr>`;
           });
         }
       }
       else if (this.activeSubTab === "subtab-unvisited") {
-        head.innerHTML = `<tr><th class="p-3">Nama Warga Belum Dikunjungi</th><th class="p-3">NIK</th><th class="p-3">TPS Ringkasan</th></tr>`;
+        head.innerHTML = `<tr><th class="p-4 text-[11px] tracking-wider">Nama Warga Belum Dikunjungi</th><th class="p-4 text-[11px] tracking-wider">NIK</th><th class="p-4 text-[11px] tracking-wider">TPS Ringkasan</th></tr>`;
         const visitedNIKs = cachedData.voters.map(v => v.nik);
         const unvisited = cachedData.dptMaster.filter(d => !visitedNIKs.includes(d.nik));
         
         unvisited.forEach(item => {
-          body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold text-slate-500">${item.nama_warga}</td><td class="p-3 font-mono">${item.nik}</td><td class="p-3 font-bold">TPS-${item.tps_id} (${item.dusun})</td></tr>`;
+          body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50/50 transition"><td class="p-4 font-bold text-slate-500 text-sm">${item.nama_warga}</td><td class="p-4 font-mono font-semibold text-sm text-slate-500">${item.nik}</td><td class="p-4 font-extrabold text-sm text-slate-700">TPS-${item.tps_id} (${item.dusun})</td></tr>`;
         });
       }
     },
 
-    // REVISI 3: LOGIK REGISTER DPT WARGA BARU MELALUI MODAL FORM & DIKIRIM KE ACTION BACKEND
     submitNewDPT: async function(e) {
       e.preventDefault();
       const btn = document.getElementById("btn-save-dpt");
@@ -639,7 +680,7 @@ const appEngine = {
       e.preventDefault();
       const btn = document.getElementById("btn-save-settings");
       const alertBox = document.getElementById("settings-alert");
-      if(btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-1"></i> Menyimpan...`; }
+      if(btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`; }
 
       const kadesName = document.getElementById("setting-candidate-name").value.trim();
       const filePhoto = document.getElementById("setting-candidate-photo").files[0];
