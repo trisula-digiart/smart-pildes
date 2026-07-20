@@ -90,8 +90,8 @@
         <!-- Custom Notification Alert Toast -->
         <div id="login-alert" class="hidden mb-6 p-4 rounded-2xl text-xs font-bold transition-all duration-300 border"></div>
 
-        <!-- Credentials Gateway Form -->
-        <form id="form-login-gate" onsubmit="handleFormSubmit(event)" class="space-y-6">
+        <!-- Credentials Gateway Form: Diarahkan langsung ke appEngine.auth.submit -->
+        <form id="form-login-gate" onsubmit="if(window.appEngine) { window.appEngine.auth.submit(event); } else { event.preventDefault(); }" class="space-y-6">
           <div>
             <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gold mb-2">Username / Nama Akun</label>
             <div class="relative">
@@ -130,44 +130,5 @@
       </div>
     </div>
   </div>
-
-  <script>
-    // Fungsi simulasi biar lu bisa klik tombol preview dan langsung ngetes form loginnya
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      const user = document.getElementById('login-username').value.trim();
-      const pass = document.getElementById('login-password').value.trim();
-      const alertBox = document.getElementById('login-alert');
-      const btn = document.getElementById('btn-login-submit');
-
-      // Tampilkan status loading simulasi
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-rotate animate-spin mr-2"></i> MEMVERIFIKASI...';
-
-      setTimeout(() => {
-        if ((user === 'admin' && pass === 'admin123') || 
-            (user === 'timses1' && pass === 'timses123') || 
-            (user === 'saksi1' && pass === 'saksi123')) {
-          
-          alertBox.className = "mb-6 p-4 rounded-2xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-          alertBox.innerHTML = '<i class="fa-solid fa-circle-check mr-2"></i> LOGIN BERHASIL! Selamat datang, mengalihkan halaman...';
-          alertBox.classList.remove('hidden');
-
-          setTimeout(() => {
-            // Simulasi redirect sukses
-            btn.innerHTML = 'MASUK RUANG OPERASIONAL';
-            btn.disabled = false;
-          }, 1500);
-
-        } else {
-          alertBox.className = "mb-6 p-4 rounded-2xl text-xs font-bold bg-red-500/10 text-red-400 border-red-500/30";
-          alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i> GAGAL! Gunakan salah satu: (admin/admin123), (timses1/timses123), atau (saksi1/saksi123)';
-          alertBox.classList.remove('hidden');
-          btn.innerHTML = 'MASUK RUANG OPERASIONAL';
-          btn.disabled = false;
-        }
-      }, 1000);
-    }
-  </script>
 </body>
 </html>
