@@ -1,0 +1,57 @@
+/* Custom Styling Initializer & Variables */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --color-navy-dark: #0B192C;
+  --color-navy-light: #1E3E62;
+  --color-gold: #D4AF37;
+  --color-gold-hover: #AA8B2C;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #F8FAFC;
+  color: #1E293B;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Premium Dashboard UI Theme Utilities */
+.bg-navy-dark { background-color: var(--color-navy-dark); }
+.bg-navy-light { background-color: var(--color-navy-light); }
+.text-gold { color: var(--color-gold); }
+.bg-gold { background-color: var(--color-gold); }
+.bg-gold:hover { background-color: var(--color-gold-hover); }
+.border-gold { border-color: var(--color-gold); }
+
+/* Anti Forced Zoom Viewport Protection Rule */
+@viewport {
+  user-scalable: no;
+  initial-scale: 1.0;
+  maximum-scale: 1.0;
+}
+
+/* Clean Media Printing Engine Utility */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .no-print, nav, sidebar, button, .tab-buttons, #setting-form {
+    display: none !important;
+  }
+  .print-container {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  th, td {
+    border: 1px solid #CBD5E1 !important;
+    padding: 8px !important;
+    font-size: 12px !important;
+  }
+}
