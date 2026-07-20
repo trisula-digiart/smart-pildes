@@ -204,10 +204,11 @@ const appEngine = {
 
   // Sistem router pemindah halaman dinamis (Single Page Application)
   router: {
+    // REVISI ARCHITECT: Mengubah underscore (_) menjadi strip (-) agar sinkron dengan file fisik di GitHub lu!
     views: {
       login: "login.html",
-      ADMIN: "dashboard_admin.html",
-      TIMSES: "dashboard_timses.html"
+      ADMIN: "dashboard-admin.html",
+      TIMSES: "dashboard-timses.html"
     },
 
     loadView: async function(role) {
@@ -219,15 +220,17 @@ const appEngine = {
         </div>`;
 
       try {
-        const viewFile = this.views[role] || this.views.login;
+        // REVISI ARCHITECT: Normalisasi case role agar kebal terhadap mismatch huruf besar/kecil database
+        const normalizedRole = (role || "").toString().trim().toUpperCase();
+        const viewFile = this.views[normalizedRole] || this.views.login;
         const res = await fetch(viewFile);
         if (!res.ok) throw new Error("Template HTML tidak ditemukan.");
         
         container.innerHTML = await res.text();
 
         // Lifecycle trigger setelah visual berhasil diinjeksi
-        if (role === "ADMIN") appEngine.admin.initDashboard();
-        if (role === "TIMSES") appEngine.field.initFieldView();
+        if (normalizedRole === "ADMIN") appEngine.admin.initDashboard();
+        if (normalizedRole === "TIMSES") appEngine.field.initFieldView();
       } catch (err) {
         console.error("Router error:", err);
         container.innerHTML = `
