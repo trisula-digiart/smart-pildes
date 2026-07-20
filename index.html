@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <!-- Anti-forced zoom viewport setup -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pilkades Victory System</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js for Admin Panel Real-Count Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+  <!-- Application Layout Shell Anchor Injection Point -->
+  <div id="app-shell" class="w-full flex-1 flex flex-col">
+    <!-- Screen Injectors Controlled Natively by app.js Component Routers -->
+    <div id="loading-screen" class="flex-1 flex flex-col items-center justify-center p-6 bg-navy-dark text-white">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-t-transparent border-yellow-500 mb-4"></div>
+      <p class="text-sm tracking-widest text-gold font-semibold uppercase">Memuat Sistem Kemenangan...</p>
+    </div>
+  </div>
+
+  <!-- Global Client Side Script Engine Connection Point -->
+  <script src="app.js"></script>
+</body>
+</html>
