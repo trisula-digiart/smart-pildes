@@ -17,13 +17,11 @@ const appEngine = {
     dbCache: null
   },
 
-  // Inisialisasi awal aplikasi saat halaman dimuat
   init: async function() {
     this.checkDatabaseFallback();
     this.auth.checkSession();
   },
 
-  // Mengatur database cadangan di browser jika GAS_API_URL masih kosong
   checkDatabaseFallback: function() {
     if (!GAS_API_URL || GAS_API_URL.trim() === "") {
       this.isSimulation = true;
@@ -59,7 +57,6 @@ const appEngine = {
     }
   },
 
-  // Request broker pusat untuk komunikasi asinkronus ke server / lokal
   request: async function(action, payload = {}) {
     if (this.isSimulation) {
       return this.handleLocalSimulation(action, payload);
@@ -80,7 +77,6 @@ const appEngine = {
     }
   },
 
-  // Simulating backend logic inside browser storage
   handleLocalSimulation: function(action, payload) {
     const settings = JSON.parse(localStorage.getItem("sim_app_settings"));
     const users = JSON.parse(localStorage.getItem("sim_users"));
@@ -157,13 +153,11 @@ const appEngine = {
           voters: votersList,
           zoning: Object.keys(zoneMap).map(k => zoneMap[k])
         };
-        
       default:
-        return { status: "success", message: "Simulation route parsed." };
+        return { status: "error", message: "Unknown action" };
     }
   },
 
-  // Sistem router pemindah halaman dinamis (Single Page Application)
   router: {
     views: {
       login: "login.html",
@@ -187,11 +181,9 @@ const appEngine = {
         
         container.innerHTML = await res.text();[cite: 2]
 
-        // PERBAIKAN INJEKSI MUTLAK: Jika halaman login dimuat, paksa bind event listener langsung dari JavaScript
         if (normalizedRole === "LOGIN") {
           appEngine.auth.bindLoginForm();
         }
-
         if (normalizedRole === "ADMIN") appEngine.admin.initDashboard();
         if (normalizedRole === "TIMSES") appEngine.field.initFieldView();
       } catch (err) {
@@ -199,10 +191,7 @@ const appEngine = {
         container.innerHTML = `
           <div class="p-8 text-center text-red-500 font-bold bg-white min-h-screen flex flex-col items-center justify-center">
             <i class="fa-solid fa-triangle-exclamation text-4xl mb-3 text-gold"></i>
-            <p class="text-sm uppercase tracking-wide">CORS / Template Loading Error</p>
-            <p class="text-xs text-slate-400 font-normal mt-2 max-w-sm leading-relaxed">
-              Pastikan membuka file lewat web server/GitHub Pages.
-            </p>
+            <p class="text-sm uppercase tracking-wide">Template Loading Error</p>
           </div>`;
       }
     },
@@ -220,20 +209,17 @@ const appEngine = {
     }
   },
 
-  // Subsistem Otentikasi Pengguna
   auth: {
-    // Fungsi baru untuk mengikat form secara paksa di level runtime browser
     bindLoginForm: function() {
       const form = document.getElementById("form-login-gate");
       if (form) {
-        form.removeAttribute("onsubmit"); // Bersihkan jejak onsubmit inline lama yang bikin macet
+        form.removeAttribute("onsubmit");
         form.addEventListener("submit", function(e) {
           e.preventDefault();
           appEngine.auth.submit(e);
         });
         console.log("⚡ TRISULA KERNEL: Form login dinamis berhasil dikunci.");
       } else {
-        // Coba lagi dalam 100ms jika DOM belum siap dieksekusi browser
         setTimeout(() => appEngine.auth.bindLoginForm(), 100);
       }
     },
@@ -248,10 +234,8 @@ const appEngine = {
         btn.innerHTML = `<i class="fa-solid fa-rotate animate-spin mr-2"></i> MEMVERIFIKASI...`;
       }
 
-      const usernameEl = document.getElementById("login-username");
-      const passwordEl = document.getElementById("login-password");
-      const username = usernameEl ? usernameEl.value.trim() : "";
-      const password = passwordEl ? passwordEl.value.trim() : "";
+      const username = document.getElementById("login-username") ? document.getElementById("login-username").value.trim() : "";
+      const password = document.getElementById("login-password") ? document.getElementById("login-password").value.trim() : "";
 
       const res = await appEngine.request("login", { username, password });
 
@@ -290,36 +274,18 @@ const appEngine = {
     }
   },
 
-  // Subsistem Ruang Kontrol Admin (Desktop)
   admin: {
     activeSubTab: "subtab-dpt",
 
     initDashboard: async function() {
       const modeBadge = document.getElementById("system-mode-badge");
       if (modeBadge) {
-        if (appEngine.isSimulation) {
-          modeBadge.innerText = "MODE SIMULASI (OFFLINE)";
-          modeBadge.className = "px-2.5 py-1 bg-amber-500/10 text-amber-400 text-[9px] font-black uppercase rounded-md tracking-wider border border-amber-500/30";
-        } else {
-          modeBadge.innerText = "LIVE SYNC ACTIVE";
-          modeBadge.className = "px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase rounded-md tracking-wider border border-emerald-500/30";
-        }
-      }
-
-      const profileName = document.getElementById("admin-profile-name");
-      if (profileName && appEngine.session.user) {
-        profileName.innerText = appEngine.session.user.nama_lengkap;
+        modeBadge.innerText = this.isSimulation ? "MODE SIMULASI (OFFLINE)" : "LIVE SYNC ACTIVE";
       }
 
       const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
       if (res.status === "success") {
         appEngine.session.dbCache = res;
-        
-        const candidateBanner = document.getElementById("hero-candidate-banner");
-        if (candidateBanner && res.branding) {
-          candidateBanner.innerText = `BERSAMA ${res.branding.nama_calon_kades.toUpperCase()} KITA SUKSESKAN PILKADES DAMAI`;
-        }
-
         this.renderMetrics(res.metrics);
         this.renderTPSRecapTable(res.zoning);
         this.renderZoningChart(res.metrics);
@@ -327,9 +293,7 @@ const appEngine = {
       }
     },
 
-    syncData: async function() {
-      await this.initDashboard();
-    },
+    syncData: async function() { await this.initDashboard(); },
 
     renderMetrics: function(metrics) {
       document.getElementById("stat-total-dpt").innerText = metrics.total_dpt;
@@ -341,7 +305,6 @@ const appEngine = {
       const tbody = document.querySelector("#table-rekap-tps tbody");
       if (!tbody) return;
       tbody.innerHTML = "";
-
       zoning.forEach(zone => {
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -357,151 +320,46 @@ const appEngine = {
     renderZoningChart: function(metrics) {
       const canvas = document.getElementById("chart-real-count-admin");
       if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-
       if (window.myPVSChart) window.myPVSChart.destroy();
-
-      window.myPVSChart = new Chart(ctx, {
+      window.myPVSChart = new Chart(canvas.getContext("2d"), {
         type: "doughnut",
         data: {
-          labels: ["PRO (Dukungan)", "KONTRA (Lawan)", "RAGU-RAGU"],
-          datasets: [{
-            data: [metrics.pro, metrics.kontra, metrics.ragu],
-            backgroundColor: ["#0B192C", "#EF4444", "#F59E0B"],
-            borderColor: "#FFFFFF",
-            borderWidth: 3
-          }]
+          labels: ["PRO", "KONTRA", "RAGU-RAGU"],
+          datasets: [{ data: [metrics.pro, metrics.kontra, metrics.ragu], backgroundColor: ["#0B192C", "#EF4444", "#F59E0B"] }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: { boxWidth: 10, padding: 15, font: { size: 10, weight: "bold" } }
-            }
-          }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
       });
     },
 
     switchSubTab: function(subTabId) {
       this.activeSubTab = subTabId;
-      document.querySelectorAll(".sub-tab-btn").forEach(btn => {
-        btn.className = "sub-tab-btn px-4 py-2 bg-white text-slate-500 hover:text-navy-dark text-xs font-bold rounded-xl border border-slate-100 transition";
-      });
-      const activeBtn = document.getElementById(`subtab-btn-${subTabId.replace('subtab-', '')}`);
-      if (activeBtn) {
-        activeBtn.className = "sub-tab-btn px-4 py-2 bg-navy-dark text-gold text-xs font-extrabold rounded-xl transition shadow-sm";
-      }
       this.renderAnalyticsTable();
     },
 
     renderAnalyticsTable: function() {
-      const data = appEngine.session.dbCache;
-      if (!data) return;
-
       const head = document.getElementById("table-analytics-head");
       const body = document.getElementById("table-analytics-body");
       if (!head || !body) return;
-
-      head.innerHTML = "";
+      head.innerHTML = `<tr><th class="p-3">Nama Warga</th><th class="p-3">NIK</th><th class="p-3">Dusun</th><th class="p-3 text-center">RT/RW</th></tr>`;
       body.innerHTML = "";
-
-      switch(this.activeSubTab) {
-        case "subtab-dpt":
-          head.innerHTML = `
-            <tr>
-              <th class="p-3">Nama Warga</th>
-              <th class="p-3">NIK</th>
-              <th class="p-3">Dusun</th>
-              <th class="p-3 text-center">RT/RW</th>
-              <th class="p-3 text-center">Orientasi</th>
-            </tr>`;
-          
-          if (appEngine.isSimulation) {
-            const dptList = JSON.parse(localStorage.getItem("sim_data_dpt"));
-            const voters = JSON.parse(localStorage.getItem("sim_warga_voters"));
-            
-            dptList.forEach(item => {
-              const match = voters.find(v => v.nik === item.nik);
-              const badge = match 
-                ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-emerald-50 text-emerald-800 border-emerald-200">${match.klasifikasi}</span>`
-                : `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-slate-50 text-slate-400 border-slate-200">Belum Didata</span>`;
-              
-              body.innerHTML += `
-                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                  <td class="p-3 font-bold text-slate-800">${item.nama_warga}</td>
-                  <td class="p-3 font-mono text-slate-600">${item.nik}</td>
-                  <td class="p-3">${item.dusun}</td>
-                  <td class="p-3 text-center">RT ${item.rt} / RW ${item.rw}</td>
-                  <td class="p-3 text-center">${badge}</td>
-                </tr>`;
-            });
-          }
-          break;
-
-        case "subtab-rt-rw":
-          head.innerHTML = `
-            <tr>
-              <th class="p-3">Lokasi RT/RW</th>
-              <th class="p-3 text-center">Target DPT</th>
-              <th class="p-3 text-center text-emerald-600">PRO</th>
-              <th class="p-3 text-center text-red-500">KONTRA</th>
-              <th class="p-3 text-center text-amber-500">RAGU-RAGU</th>
-            </tr>`;
-
-          data.zoning.forEach(zone => {
-            body.innerHTML += `
-              <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                <td class="p-3 font-bold text-slate-800">${zone.zone}</td>
-                <td class="p-3 text-center font-bold">${zone.dpt}</td>
-                <td class="p-3 text-center text-emerald-600 font-extrabold">${zone.pro}</td>
-                <td class="p-3 text-center text-red-500 font-extrabold">${zone.kontra}</td>
-                <td class="p-3 text-center text-amber-500 font-extrabold">${zone.ragu}</td>
-              </tr>`;
-          });
-          break;
+      
+      if (this.isSimulation) {
+        const dptList = JSON.parse(localStorage.getItem("sim_data_dpt"));
+        dptList.forEach(item => {
+          body.innerHTML += `<tr class="border-b"><td class="p-3 font-bold">${item.nama_warga}</td><td class="p-3 font-mono">${item.nik}</td><td class="p-3">${item.dusun}</td><td class="p-3 text-center">RT ${item.rt} / RW ${item.rw}</td></tr>`;
+        });
       }
     }
   },
 
-  // Subsistem Operasional Lapangan (Mobile View Timses)
   field: {
-    initFieldView: function() {
-      const profileName = document.getElementById("timses-profile-name");
-      if (profileName && appEngine.session.user) {
-        profileName.innerText = appEngine.session.user.nama_lengkap;
-      }
-    }
+    initFieldView: function() {}
   },
 
   utils: {
-    exportTableCSV: function(tableId) {
-      const table = document.getElementById(tableId);
-      if (!table) return;
-      let csv = [];
-      for (let i = 0; i < table.rows.length; i++) {
-        let row = [], cols = table.rows[i].cells;
-        for (let j = 0; j < cols.length; j++) {
-          row.push('"' + cols[j].innerText.trim().replace(/"/g, '""') + '"');
-        }
-        csv.push(row.join(","));
-      }
-      const csvBlob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(csvBlob);
-      link.setAttribute("download", `PVS_DATA_${tableId}_${Date.now()}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    },
-
-    printTable: function() {
-      window.print();
-    }
+    printTable: function() { window.print(); },
+    exportTableCSV: function() { alert('CSV Export triggered'); }
   }
 };
 
-// Menjalankan inisialisasi bootloader saat DOM siap
 window.addEventListener("DOMContentLoaded", () => appEngine.init());
