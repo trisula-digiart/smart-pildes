@@ -1,9 +1,9 @@
 /**
  * ==========================================================
- * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1
+ * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.1
  * Features: Auto simulation mode fallback, decoupling routers,
- *           advanced matrix filters (DPT, Vote Records), and
- *           base64 media file upload reader pipelines.
+ *           advanced matrix filters (DPT, Vote Records),
+ *           dynamic header component binders, and DPT write pipelines.
  * ==========================================================
  */
 
@@ -105,7 +105,7 @@ const appEngine = {
       case "getAdminDashboard":
         const proCount = voters.filter(v => v.klasifikasi === "PRO").length;
         const kontraCount = voters.filter(v => v.klasifikasi === "KONTRA").length;
-        const raguCount = voters.filter(v => v.klasifikasi === "RAGU-RAGU").length;
+        const raguCount = voters.filter(v => v.klasifikasi === "RAGU-RAGU" || v.klasifikasi === "RAGU").length;
         
         const votersList = voters.map(v => {
           const d = dpt.find(item => item.nik === v.nik) || {};
@@ -141,7 +141,7 @@ const appEngine = {
             if (zoneMap[key]) {
               if (v.klasifikasi === "PRO") zoneMap[key].pro++;
               if (v.klasifikasi === "KONTRA") zoneMap[key].kontra++;
-              if (v.klasifikasi === "RAGU-RAGU") zoneMap[key].ragu++;
+              if (v.klasifikasi === "RAGU-RAGU" || v.klasifikasi === "RAGU") zoneMap[key].ragu++;
             }
           }
         });
@@ -162,6 +162,24 @@ const appEngine = {
           dptMaster: dpt,
           timsesList: users.filter(u => u.role === "TIMSES")
         };
+
+      case "addNewDPT":
+        const isExist = dpt.find(d => d.nik === payload.nik);
+        if (isExist) {
+          return { status: "error", message: "Nomor NIK ini sudah terdaftar di DPT!" };
+        }
+        const newDptRow = {
+          nik: payload.nik,
+          no_kk: payload.kk,
+          nama_warga: payload.nama,
+          dusun: payload.dusun,
+          rt: payload.rt,
+          rw: payload.rw,
+          tps_id: payload.tps_id
+        };
+        dpt.push(newDptRow);
+        localStorage.setItem("sim_data_dpt", JSON.stringify(dpt));
+        return { status: "success", message: "Warga baru berhasil didaftarkan ke DPT!" };
 
       case "updateBranding":
         settings.nama_calon_kades = payload.nama_calon_kades;
@@ -249,7 +267,6 @@ const appEngine = {
           appEngine.auth.submit(e);
         });
         
-        // Load dynamically saved login branding banner if present
         appEngine.request("getBranding").then(res => {
           if(res && res.status === "success" && res.branding.drive_id_banner_login) {
             const leftPanel = document.querySelector(".md\\:flex.md\\:w-1/2");
@@ -348,7 +365,6 @@ const appEngine = {
         this.populateFilterDropdowns(res);
         this.renderAnalyticsTable();
         
-        // Form Populate Branding Name
         const nameInput = document.getElementById("setting-candidate-name");
         if(nameInput && res.branding) {
           nameInput.value = res.branding.nama_calon_kades || "";
@@ -361,11 +377,14 @@ const appEngine = {
     },
 
     bindHeaderInteractions: function() {
+      // REVISI 2: MEMPERKUAT EVENT INTERACTIVE HEADER AGAR ANTI-EVENT-LOSS
       const logoutBtn = document.getElementById("btn-admin-logout");
       if (logoutBtn) {
-        logoutBtn.replaceWith(logoutBtn.cloneNode(true));
-        document.getElementById("btn-admin-logout").addEventListener("click", function(e) {
+        const clone = logoutBtn.cloneNode(true);
+        logoutBtn.replaceWith(clone);
+        clone.addEventListener("click", function(e) {
           e.preventDefault();
+          e.stopPropagation();
           appEngine.auth.logout();
         });
       }
@@ -373,8 +392,10 @@ const appEngine = {
       const profileTrigger = document.getElementById("btn-admin-profile-trigger");
       const dropdownBox = document.getElementById("box-admin-dropdown");
       if (profileTrigger && dropdownBox) {
-        profileTrigger.replaceWith(profileTrigger.cloneNode(true));
-        document.getElementById("btn-admin-profile-trigger").addEventListener("click", function(e) {
+        const clone = profileTrigger.cloneNode(true);
+        profileTrigger.replaceWith(clone);
+        clone.addEventListener("click", function(e) {
+          e.preventDefault();
           e.stopPropagation();
           dropdownBox.classList.toggle("hidden");
           const notifBox = document.getElementById("box-admin-notification");
@@ -385,8 +406,10 @@ const appEngine = {
       const notifTrigger = document.getElementById("btn-admin-notification");
       const notifBox = document.getElementById("box-admin-notification");
       if (notifTrigger && notifBox) {
-        notifTrigger.replaceWith(notifTrigger.cloneNode(true));
-        document.getElementById("btn-admin-notification").addEventListener("click", function(e) {
+        const clone = notifTrigger.cloneNode(true);
+        notifTrigger.replaceWith(clone);
+        clone.addEventListener("click", function(e) {
+          e.preventDefault();
           e.stopPropagation();
           notifBox.classList.toggle("hidden");
           if (dropdownBox) dropdownBox.classList.add("hidden");
@@ -396,16 +419,19 @@ const appEngine = {
       const syncBtn = document.getElementById("btn-admin-sync");
       const syncIcon = document.getElementById("icon-admin-sync");
       if (syncBtn) {
-        syncBtn.replaceWith(syncBtn.cloneNode(true));
-        const finalSyncBtn = document.getElementById("btn-admin-sync");
-        finalSyncBtn.addEventListener("click", async function(e) {
+        const clone = syncBtn.cloneNode(true);
+        syncBtn.replaceWith(clone);
+        clone.addEventListener("click", async function(e) {
           e.preventDefault();
-          if (syncIcon) syncIcon.classList.add("animate-spin");
-          finalSyncBtn.disabled = true;
+          e.stopPropagation();
+          const targetIcon = document.getElementById("icon-admin-sync");
+          if (targetIcon) targetIcon.classList.add("animate-spin");
+          clone.disabled = true;
           await appEngine.admin.syncData();
           setTimeout(() => {
-            if (syncIcon) syncIcon.classList.remove("animate-spin");
-            finalSyncBtn.disabled = false;
+            const finalIcon = document.getElementById("icon-admin-sync");
+            if (finalIcon) finalIcon.classList.remove("animate-spin");
+            clone.disabled = false;
           }, 800);
         });
       }
@@ -418,7 +444,17 @@ const appEngine = {
       });
     },
 
-    syncData: async function() { await this.initDashboard(); },
+    syncData: async function() {
+      const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
+      if (res.status === "success") {
+        appEngine.session.dbCache = res;
+        this.renderMetrics(res.metrics);
+        this.renderTPSRecapTable(res.zoning);
+        this.renderZoningChart(res.metrics);
+        this.populateFilterDropdowns(res);
+        this.renderAnalyticsTable();
+      }
+    },
 
     populateFilterDropdowns: function(data) {
       const rtrwSelect = document.getElementById("filter-select-rtrw");
@@ -451,7 +487,6 @@ const appEngine = {
         activeBtn.className = "sub-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl transition shadow-sm bg-navy-dark text-gold";
       }
 
-      // Hide or show dynamic visibility layout filtering elements
       const boxKK = document.getElementById("filter-box-kk");
       const boxVote = document.getElementById("filter-box-vote");
       const boxTimses = document.getElementById("filter-box-timses");
@@ -485,13 +520,13 @@ const appEngine = {
       body.innerHTML = "";
       const selectedZone = document.getElementById("filter-select-rtrw").value;
 
-      // REVISI PENAMBAHAN 1: TAB DATA DPT DENGAN FILTERISASI RT/RW & NOMOR KK
+      // REVISI 1: MEMPERBAIKI RENDERING DATA DPT MASTER AGAR SINKRON DENGAN DATA SHEET
       if (this.activeSubTab === "subtab-dpt") {
         head.innerHTML = `<tr><th class="p-3">Nama Warga</th><th class="p-3">NIK</th><th class="p-3">Nomor KK</th><th class="p-3">Dusun - RT/RW</th></tr>`;
-        const filterKK = document.getElementById("filter-input-kk").value.trim().toLowerCase();
+        const filterKK = document.getElementById("filter-input-kk") ? document.getElementById("filter-input-kk").value.trim().toLowerCase() : "";
         
-        let filteredDPT = cachedData.dptMaster || [];
-        filteredDPT.forEach(item => {
+        const dptList = cachedData.dptMaster || [];
+        dptList.forEach(item => {
           const zoneKey = `${item.dusun} - RT ${item.rt} / RW ${item.rw}`;
           if (selectedZone !== "ALL" && zoneKey !== selectedZone) return;
           if (filterKK !== "" && !item.no_kk.toLowerCase().includes(filterKK)) return;
@@ -505,7 +540,6 @@ const appEngine = {
             </tr>`;
         });
       } 
-      // REVISI PENAMBAHAN 2: TAB HASIL PEREKAMAN SUARA TIMSES + FILTER STATUS, TIMSES, & RT/RW
       else if (this.activeSubTab === "subtab-voter-records") {
         head.innerHTML = `<tr><th class="p-3">Nama Warga Pemilih</th><th class="p-3">NIK</th><th class="p-3 text-center">Orientasi</th><th class="p-3">Zonasi RT/RW</th><th class="p-3">Petugas Lapangan</th></tr>`;
         const selectedVote = document.getElementById("filter-select-vote").value;
@@ -557,7 +591,50 @@ const appEngine = {
       }
     },
 
-    // REVISI PERBAIKAN 3: SAVE SETTINGS BRANDING (TERMASUK PIPELINE BASE64 MEDIA READER)
+    // REVISI 3: LOGIK REGISTER DPT WARGA BARU MELALUI MODAL FORM & DIKIRIM KE ACTION BACKEND
+    submitNewDPT: async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btn-save-dpt");
+      const alertBox = document.getElementById("modal-dpt-alert");
+      if(btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`; }
+
+      const nik = document.getElementById("dpt-nik").value.trim();
+      const kk = document.getElementById("dpt-kk").value.trim();
+      const nama = document.getElementById("dpt-nama").value.trim();
+      const dusun = document.getElementById("dpt-dusun").value.trim();
+      const rt = document.getElementById("dpt-rt").value.trim();
+      const rw = document.getElementById("dpt-rw").value.trim();
+      const tps_id = document.getElementById("dpt-tps").value.trim();
+
+      const res = await appEngine.request("addNewDPT", {
+        token: appEngine.session.user.token,
+        nik: nik,
+        kk: kk,
+        nama: nama,
+        dusun: dusun,
+        rt: rt,
+        rw: rw,
+        tps_id: tps_id
+      });
+
+      if(alertBox) {
+        alertBox.className = `p-3 rounded-xl text-xs font-bold mb-4 ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-500'}`;
+        alertBox.innerHTML = res.message;
+        alertBox.classList.remove("hidden");
+      }
+
+      if (res.status === "success") {
+        setTimeout(() => {
+          document.getElementById("form-add-dpt").reset();
+          document.getElementById("modal-add-dpt").classList.add("hidden");
+          alertBox.classList.add("hidden");
+          appEngine.admin.syncData();
+        }, 1200);
+      }
+      
+      if(btn) { btn.disabled = false; btn.innerHTML = `<span>Simpan Warga</span><i class="fa-solid fa-floppy-disk"></i>`; }
+    },
+
     saveSettings: async function(e) {
       e.preventDefault();
       const btn = document.getElementById("btn-save-settings");
@@ -597,11 +674,10 @@ const appEngine = {
       } catch (err) {
         console.error("Upload handler runtime failed:", err);
       } finally {
-        if(btn) { btn.disabled = false; btn.innerHTML = `<span>SIMPAN PERUBAHAN BRANDING</span><i class="fa-solid fa-floppy-disk ml-1"></i>`; }
+        if(btn) { btn.disabled = false; btn.innerHTML = `<span>SIMPAN PERUBAHAN BRANDING</span><i class="fa-solid fa-floppy-disk"></i>`; }
       }
     },
 
-    // REVISI PERBAIKAN 3: REGISTRASI TIMSES YANG BISA AKSES APLIKASI
     submitRegister: async function(e) {
       e.preventDefault();
       const btn = document.getElementById("btn-submit-timses");
