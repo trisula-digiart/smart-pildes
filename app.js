@@ -7,7 +7,7 @@
  */
 
 // !!! TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT (GAS) LU DI SINI UNTUK MODE CLOUD !!!
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzSCAutKZdHJpIcr7FDB2Gfo7vhccILkCqeoRnMc_96QrQw_FhWhDHZVJEO0sEUBzNt/exec"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyCctiDjoWcgTPHqDghNC-HUfuUSuLHa0nqoSX384HuAtrtujumwsr-DpylQyVK6gYA/exec"; 
 
 const appEngine = {
   isSimulation: false,
@@ -29,7 +29,6 @@ const appEngine = {
       this.isSimulation = true;
       console.log("⚠️ TRISULA KERNEL: GAS_API_URL kosong. Beralih ke Mode Simulasi Offline.");
       
-      // Setup data default untuk simulasi interaktif
       if (!localStorage.getItem("sim_app_settings")) {
         localStorage.setItem("sim_app_settings", JSON.stringify({
           nama_calon_kades: "Ahmad Dwi Saputra",
@@ -103,51 +102,11 @@ const appEngine = {
         }
         return { status: "error", message: "Username atau password salah!" };
 
-      case "getAppSettings":
-        return { status: "success", data: settings };
-
-      case "updateAppSettings":
-        settings.nama_calon_kades = payload.nama_calon_kades;
-        localStorage.setItem("sim_app_settings", JSON.stringify(settings));
-        return { status: "success", message: "Konfigurasi lokal berhasil disimpan!" };
-
-      case "registerTimses":
-        const duplicate = users.find(u => u.username === payload.username);
-        if (duplicate) return { status: "error", message: "Username sudah terdaftar!" };
-        users.push({
-          user_id: "USR-0" + (users.length + 1),
-          username: payload.username,
-          password_hash: payload.password,
-          nama_lengkap: payload.nama_lengkap,
-          role: "TIMSES",
-          status_aktif: "Active"
-        });
-        localStorage.setItem("sim_users", JSON.stringify(users));
-        return { status: "success", message: "Petugas lapangan baru berhasil didaftarkan!" };
-
-      case "submitVoter":
-        const dptMatch = dpt.find(d => d.nik === payload.nik.toString());
-        if (!dptMatch) return { status: "error", message: "Data warga tidak terdaftar dalam DPT!" };
-        
-        const voterDuplicate = voters.find(v => v.nik === payload.nik.toString());
-        if (voterDuplicate) return { status: "error", message: "NIK ini sudah didata sebelumnya oleh Timses!" };
-
-        voters.push({
-          voter_id: "VTR-" + Math.floor(Math.random() * 1000),
-          nik: payload.nik.toString(),
-          klasifikasi: payload.klasifikasi,
-          input_by_user_id: this.session.user.user_id,
-          created_at: new Date().toISOString()
-        });
-        localStorage.setItem("sim_warga_voters", JSON.stringify(voters));
-        return { status: "success", message: `Data pemilih "${dptMatch.nama_warga}" berhasil diamankan!` };
-
       case "getAdminDashboard":
         const proCount = voters.filter(v => v.klasifikasi === "PRO").length;
         const kontraCount = voters.filter(v => v.klasifikasi === "KONTRA").length;
         const raguCount = voters.filter(v => v.klasifikasi === "RAGU-RAGU").length;
         
-        // Formating lists for data tables
         const votersList = voters.map(v => {
           const d = dpt.find(item => item.nik === v.nik) || {};
           const u = users.find(user => user.user_id === v.input_by_user_id) || {};
@@ -163,7 +122,6 @@ const appEngine = {
           };
         });
 
-        // Spatial zoning maps
         const zoneMap = {};
         dpt.forEach(item => {
           const key = `${item.dusun} - RT ${item.rt} / RW ${item.rw}`;
@@ -199,12 +157,14 @@ const appEngine = {
           voters: votersList,
           zoning: Object.keys(zoneMap).map(k => zoneMap[k])
         };
+        
+      default:
+        return { status: "success", message: "Simulation route parsed." };
     }
   },
 
   // Sistem router pemindah halaman dinamis (Single Page Application)
   router: {
-    // KUNCI UTAMA PERBAIKAN: Mengubah underscore (_) menjadi strip (-) agar sesuai nama file di GitHub
     views: {
       login: "login.html",
       ADMIN: "dashboard-admin.html",
@@ -212,7 +172,7 @@ const appEngine = {
     },
 
     loadView: async function(role) {
-      const container = document.getElementById("app-root");
+      const container = document.getElementById("app-root");[cite: 2]
       container.innerHTML = `
         <div class="flex-1 flex flex-col items-center justify-center bg-[#0B192C] text-white min-h-screen">
           <div class="animate-spin rounded-full h-12 w-12 border-4 border-t-transparent border-[#D4AF37] mb-4"></div>
@@ -225,9 +185,13 @@ const appEngine = {
         const res = await fetch(viewFile);
         if (!res.ok) throw new Error("Template HTML tidak ditemukan.");
         
-        container.innerHTML = await res.text();
+        container.innerHTML = await res.text();[cite: 2]
 
-        // Lifecycle trigger setelah visual berhasil diinjeksi
+        // PERBAIKAN INJEKSI MUTLAK: Jika halaman login dimuat, paksa bind event listener langsung dari JavaScript
+        if (normalizedRole === "LOGIN") {
+          appEngine.auth.bindLoginForm();
+        }
+
         if (normalizedRole === "ADMIN") appEngine.admin.initDashboard();
         if (normalizedRole === "TIMSES") appEngine.field.initFieldView();
       } catch (err) {
@@ -237,7 +201,7 @@ const appEngine = {
             <i class="fa-solid fa-triangle-exclamation text-4xl mb-3 text-gold"></i>
             <p class="text-sm uppercase tracking-wide">CORS / Template Loading Error</p>
             <p class="text-xs text-slate-400 font-normal mt-2 max-w-sm leading-relaxed">
-              Pastikan Anda membuka file index.html menggunakan Local Web Server (seperti Live Server VS Code) atau jalankan langsung lewat GitHub Pages!
+              Pastikan membuka file lewat web server/GitHub Pages.
             </p>
           </div>`;
       }
@@ -245,19 +209,35 @@ const appEngine = {
 
     switchTab: function(tabId) {
       document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("text-gold", "bg-slate-800/60"));
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.className = "tab-btn w-full flex items-center gap-3 px-4 py-3.5 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all text-slate-400 hover:bg-slate-800/40 hover:text-white");
 
       const activeTab = document.getElementById(`tab-${tabId}`);
       if (activeTab) activeTab.classList.remove("hidden");
 
       if (window.event && window.event.currentTarget) {
-        window.event.currentTarget.classList.add("text-gold", "bg-slate-800/60");
+        window.event.currentTarget.className = "tab-btn w-full flex items-center gap-3 px-4 py-3.5 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all text-gold bg-slate-800/60";
       }
     }
   },
 
   // Subsistem Otentikasi Pengguna
   auth: {
+    // Fungsi baru untuk mengikat form secara paksa di level runtime browser
+    bindLoginForm: function() {
+      const form = document.getElementById("form-login-gate");
+      if (form) {
+        form.removeAttribute("onsubmit"); // Bersihkan jejak onsubmit inline lama yang bikin macet
+        form.addEventListener("submit", function(e) {
+          e.preventDefault();
+          appEngine.auth.submit(e);
+        });
+        console.log("⚡ TRISULA KERNEL: Form login dinamis berhasil dikunci.");
+      } else {
+        // Coba lagi dalam 100ms jika DOM belum siap dieksekusi browser
+        setTimeout(() => appEngine.auth.bindLoginForm(), 100);
+      }
+    },
+
     submit: async function(e) {
       if (e) e.preventDefault();
       const btn = document.getElementById("btn-login-submit");
@@ -270,8 +250,8 @@ const appEngine = {
 
       const usernameEl = document.getElementById("login-username");
       const passwordEl = document.getElementById("login-password");
-      const username = usernameEl ? usernameEl.value : "";
-      const password = passwordEl ? passwordEl.value : "";
+      const username = usernameEl ? usernameEl.value.trim() : "";
+      const password = passwordEl ? passwordEl.value.trim() : "";
 
       const res = await appEngine.request("login", { username, password });
 
@@ -331,12 +311,10 @@ const appEngine = {
         profileName.innerText = appEngine.session.user.nama_lengkap;
       }
 
-      // Ambil seluruh data analitik dari server/fallback simulator
       const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
       if (res.status === "success") {
         appEngine.session.dbCache = res;
         
-        // Update Brand Kades
         const candidateBanner = document.getElementById("hero-candidate-banner");
         if (candidateBanner && res.branding) {
           candidateBanner.innerText = `BERSAMA ${res.branding.nama_calon_kades.toUpperCase()} KITA SUKSESKAN PILKADES DAMAI`;
@@ -370,8 +348,8 @@ const appEngine = {
             <td class="p-3 font-bold text-slate-800">${zone.zone}</td>
             <td class="p-3 text-center">${zone.dpt}</td>
             <td class="p-3 text-center text-emerald-600 font-black">${zone.pro}</td>
-            <td class="p-3 text-center text-red-500 font-semibold">${zone.kontra}</td>
-            <td class="p-3 text-center text-amber-500 font-semibold">${zone.ragu}</td>
+            <td class="p-3 text-center text-slate-700">${zone.kontra}</td>
+            <td class="p-3 text-center text-slate-700">${zone.ragu}</td>
           </tr>`;
       });
     },
@@ -386,7 +364,7 @@ const appEngine = {
       window.myPVSChart = new Chart(ctx, {
         type: "doughnut",
         data: {
-          labels: ["PRO (Dukukangan)", "KONTRA (Oposisi)", "RAGU-RAGU"],
+          labels: ["PRO (Dukungan)", "KONTRA (Lawan)", "RAGU-RAGU"],
           datasets: [{
             data: [metrics.pro, metrics.kontra, metrics.ragu],
             backgroundColor: ["#0B192C", "#EF4444", "#F59E0B"],
@@ -407,7 +385,6 @@ const appEngine = {
       });
     },
 
-    // Sistem Sub-Tabs Data Pemilih Lapangan
     switchSubTab: function(subTabId) {
       this.activeSubTab = subTabId;
       document.querySelectorAll(".sub-tab-btn").forEach(btn => {
@@ -485,138 +462,6 @@ const appEngine = {
               </tr>`;
           });
           break;
-
-        case "subtab-kk":
-          head.innerHTML = `
-            <tr>
-              <th class="p-3">Nomor Kartu Keluarga (KK)</th>
-              <th class="p-3">Dusun / RT / RW</th>
-              <th class="p-3">Nama Kepala / Anggota</th>
-              <th class="p-3 text-center">Status Pemetaan KK</th>
-            </tr>`;
-
-          if (appEngine.isSimulation) {
-            const dptList = JSON.parse(localStorage.getItem("sim_data_dpt"));
-            const voters = JSON.parse(localStorage.getItem("sim_warga_voters"));
-            
-            const kkMap = {};
-            dptList.forEach(item => {
-              if (!kkMap[item.no_kk]) {
-                kkMap[item.no_kk] = { dusun: item.dusun, rt: item.rt, rw: item.rw, members: [], proCount: 0 };
-              }
-              const match = voters.find(v => v.nik === item.nik);
-              kkMap[item.no_kk].members.push(item.nama_warga + (match ? ` (${match.klasifikasi})` : ''));
-              if (match && match.klasifikasi === "PRO") kkMap[item.no_kk].proCount++;
-            });
-
-            for (let kk in kkMap) {
-              const statusBadge = kkMap[kk].proCount > 0 
-                ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-emerald-50 text-emerald-800 border-emerald-200">Aman (${kkMap[kk].proCount} Pro)</span>`
-                : `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-red-50 text-red-800 border-red-200">Rentan</span>`;
-
-              body.innerHTML += `
-                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                  <td class="p-3 font-mono font-bold text-slate-800">${kk}</td>
-                  <td class="p-3">${kkMap[kk].dusun} (RT ${kkMap[kk].rt}/RW ${kkMap[kk].rw})</td>
-                  <td class="p-3 text-slate-500 font-medium">${kkMap[kk].members.join(", ")}</td>
-                  <td class="p-3 text-center">${statusBadge}</td>
-                </tr>`;
-            }
-          }
-          break;
-
-        case "subtab-timses":
-          head.innerHTML = `
-            <tr>
-              <th class="p-3">Petugas Penginput (Timses)</th>
-              <th class="p-3 text-center">Jumlah Warga Didata</th>
-              <th class="p-3 text-center">Kontribusi Lapangan</th>
-            </tr>`;
-
-          const timsesStats = {};
-          data.voters.forEach(v => {
-            if (!timsesStats[v.input_by]) timsesStats[v.input_by] = 0;
-            timsesStats[v.input_by]++;
-          });
-
-          const totalDataVoters = data.voters.length || 1;
-          for (let name in timsesStats) {
-            const percent = ((timsesStats[name] / totalDataVoters) * 100).toFixed(1);
-            body.innerHTML += `
-              <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                <td class="p-3 font-bold text-slate-800">${name}</td>
-                <td class="p-3 text-center font-extrabold text-blue-950">${timsesStats[name]} Warga</td>
-                <td class="p-3 text-center font-bold text-slate-700">${percent}%</td>
-              </tr>`;
-          }
-          break;
-
-        case "subtab-unvisited":
-          head.innerHTML = `
-            <tr>
-              <th class="p-3">Nama Warga</th>
-              <th class="p-3">NIK</th>
-              <th class="p-3">Dusun / RT / RW</th>
-              <th class="p-3">Keterangan Status</th>
-            </tr>`;
-
-          if (appEngine.isSimulation) {
-            const dptList = JSON.parse(localStorage.getItem("sim_data_dpt"));
-            const voters = JSON.parse(localStorage.getItem("sim_warga_voters"));
-
-            dptList.forEach(item => {
-              const match = voters.find(v => v.nik === item.nik);
-              const isRagu = match && match.klasifikasi === "RAGU-RAGU";
-              const isUnvisited = !match;
-
-              if (isRagu || isUnvisited) {
-                const label = isRagu 
-                  ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-amber-50 text-amber-800 border-amber-200">Konstituen Ragu-Ragu</span>`
-                  : `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-red-50 text-red-800 border-red-200">Belum Dikunjungi</span>`;
-
-                body.innerHTML += `
-                  <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                    <td class="p-3 font-bold text-slate-800">${item.nama_warga}</td>
-                    <td class="p-3 font-mono text-slate-500">${item.nik}</td>
-                    <td class="p-3">${item.dusun} / RT ${item.rt} / RW ${item.rw}</td>
-                    <td class="p-3">${label}</td>
-                  </tr>`;
-              }
-            });
-          }
-          break;
-      }
-    },
-
-    saveSettings: async function(e) {
-      if (e) e.preventDefault();
-      const payload = {
-        nama_calon_kades: document.getElementById("setting-candidate-name").value
-      };
-      const res = await appEngine.request("updateAppSettings", payload);
-      alert(res.message);
-      if (res.status === "success") this.initDashboard();
-    },
-
-    submitRegister: async function(e) {
-      if (e) e.preventDefault();
-      const alertBox = document.getElementById("register-alert");
-      const payload = {
-        nama_lengkap: document.getElementById("reg-name").value,
-        username: document.getElementById("reg-username").value,
-        password: document.getElementById("reg-password").value
-      };
-
-      const res = await appEngine.request("registerTimses", payload);
-      
-      if (alertBox) {
-        alertBox.className = `p-3 rounded-xl text-xs font-bold mb-4 ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
-        alertBox.innerText = res.message;
-        alertBox.classList.remove("hidden");
-      }
-
-      if (res.status === "success") {
-        document.getElementById("form-register-timses").reset();
       }
     }
   },
@@ -627,27 +472,6 @@ const appEngine = {
       const profileName = document.getElementById("timses-profile-name");
       if (profileName && appEngine.session.user) {
         profileName.innerText = appEngine.session.user.nama_lengkap;
-      }
-    },
-
-    submitVoter: async function(e) {
-      if (e) e.preventDefault();
-      const alertBox = document.getElementById("field-alert");
-      const nik = document.getElementById("field-voter-nik").value;
-      const klasifikasi = document.getElementById("field-voter-class").value;
-
-      const res = await appEngine.request("submitVoter", { nik, klasifikasi });
-
-      if (alertBox) {
-        alertBox.className = `p-4 rounded-2xl text-xs font-extrabold mb-4 shadow-sm ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
-        alertBox.innerHTML = res.status === 'success' 
-          ? `<i class="fa-solid fa-circle-check mr-2"></i> ${res.message}`
-          : `<i class="fa-solid fa-triangle-exclamation mr-2"></i> ${res.message}`;
-        alertBox.classList.remove("hidden");
-      }
-
-      if (res.status === "success") {
-        document.getElementById("form-voter-submission").reset();
       }
     }
   },
