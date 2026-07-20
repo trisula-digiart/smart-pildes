@@ -1,114 +1,426 @@
-<!-- STREAMING_CHUNK: Structuring mobile-first field operations hub... -->
-<div class="flex-1 flex flex-col w-full max-w-md mx-auto bg-[#F8FAFC] shadow-2xl min-h-screen relative pb-16">
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Operator Lapangan - Pilkades Victory System</title>
   
-  <header class="bg-gradient-premium text-white p-4 flex items-center justify-between border-b-4 border-gold sticky top-0 z-40 shadow-md">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-gradient-gold text-navy-dark font-black flex items-center justify-center text-base shadow-md border border-gold/30"><i class="fa-solid fa-tower-broadcast"></i></div>
-      <div>
-        <h1 class="font-black text-xs tracking-wider uppercase" id="timses-header-title">FIELD WORKER HUB</h1>
-        <p class="text-[10px] text-slate-300 font-semibold tracking-wide truncate max-w-[170px]" id="timses-profile-name">Petugas Lapangan</p>
-      </div>
-    </div>
-    <!-- Logout Button -->
-    <button onclick="appEngine.auth.logout()" class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 hover:bg-red-950 hover:text-red-200 transition flex items-center justify-center text-xs shadow-inner border border-slate-700/60">
-      <i class="fa-solid fa-power-off"></i>
-    </button>
-  </header>
+  <!-- Tailwind CSS Core Engine -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Plus Jakarta Sans Fonts for Premium Premium Aesthetic -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Pro Icon Packages -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <main class="flex-1 p-4 space-y-5 overflow-y-auto">
-    <!-- Sync Status Button & Indicator inside mobile layout -->
-    <div class="flex justify-between items-center bg-white p-3 rounded-2xl border border-slate-100 shadow-sm no-print">
-      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-database mr-1"></i> Data Sync Status</span>
-      <button onclick="appEngine.admin.syncData()" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-extrabold rounded-lg border border-emerald-200 flex items-center gap-1 transition">
-        <i class="fa-solid fa-rotate animate-spin"></i> SYNCED
-      </button>
-    </div>
+  <style>
+    :root {
+      --color-navy-dark: #0B192C;
+      --color-navy-light: #1E3E62;
+      --color-gold: #D4AF37;
+      --color-gold-hover: #AA8B2C;
+      --gradient-premium: linear-gradient(135deg, #0B192C 0%, #1E3E62 100%);
+      --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #AA8B2C 100%);
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0B192C; /* Dark background to match mobile locked shell */
+      touch-action: none; /* Block erratic scrolling behaviors on mobile devices */
+      overflow: hidden;
+    }
+    .bg-navy-dark { background-color: var(--color-navy-dark); }
+    .bg-navy-light { background-color: var(--color-navy-light); }
+    .bg-gradient-premium { background: var(--gradient-premium); }
+    .bg-gradient-gold { background: var(--gradient-gold); }
+    .text-gold { color: var(--color-gold); }
+    .border-gold { border-color: var(--color-gold); }
+    
+    /* Simulate mobile device screen container on desktop preview */
+    .mobile-container {
+      max-width: 480px;
+      width: 100%;
+      height: 100vh;
+      margin: 0 auto;
+      background-color: #F8FAFC;
+      display: flex;
+      flex-col: column;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    /* Hide scrollbar of form wrapper */
+    .scroll-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scroll-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
 
-    <!-- Toast Notification Alert -->
-    <div id="field-alert" class="hidden p-4 rounded-2xl text-xs font-extrabold shadow-sm transition-all duration-300"></div>
-
-    <!-- PANEL A: Timses Voter Orientation Mapping -->
-    <section id="pane-timses-voter" class="space-y-4">
-      <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm space-y-5 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-2 h-full bg-navy-dark"></div>
-        <div class="border-b border-slate-100 pb-3">
-          <h2 class="text-xs font-black text-navy-dark uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-address-card text-gold text-sm"></i> Validasi NIK DPT Lapangan</h2>
-          <p class="text-[11px] text-slate-400 mt-1 font-semibold leading-relaxed">Pastikan NIK warga 16 digit terinput dengan benar. Sistem melakukan pengecekan rigid terhadap master list DPT desa.</p>
+  <div class="mobile-container flex flex-col overflow-hidden">
+    
+    <!-- Mobile Top Header Bar Component -->
+    <header class="bg-gradient-premium text-white px-5 py-4 flex items-center justify-between border-b-[3px] border-gold shrink-0 z-30 shadow-md">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center text-navy-dark font-black text-lg shadow-md border border-white/10">
+          <i class="fa-solid fa-tower-broadcast"></i>
         </div>
+        <div>
+          <span class="text-[9px] text-gold font-bold tracking-widest uppercase block">TRISULA FIELD UNIT</span>
+          <span class="text-sm font-extrabold text-white tracking-tight block" id="header-user-display">Rahmat Lapangan</span>
+        </div>
+      </div>
+      
+      <!-- Role Toggle Switcher (Preview Only Sim) -->
+      <div class="flex flex-col items-end">
+        <select id="sim-role-switcher" onchange="switchRoleSim()" class="bg-slate-800/80 border border-gold/30 text-[9px] font-black text-gold rounded-lg px-2 py-1 outline-none cursor-pointer">
+          <option value="TIMSES">MODE: TIMSES</option>
+          <option value="SAKSI">MODE: SAKSI (TPS 01)</option>
+        </select>
+        <span class="text-[8px] text-slate-400 font-bold mt-0.5">Role Switcher [Sim]</span>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto px-5 py-6 space-y-5 scroll-hide pb-20">
+      
+      <!-- Custom Simulasi Status Toast Info (Always Active on Top) -->
+      <div class="p-3 bg-blue-50 border border-blue-200/80 rounded-2xl flex items-start gap-3">
+        <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 text-sm"></i>
+        <div class="space-y-0.5">
+          <p class="text-[10px] font-extrabold text-blue-900 uppercase tracking-wide">Mode Simulasi Mandiri Aktif</p>
+          <p class="text-[10px] text-blue-700 font-medium leading-relaxed">Gunakan DPT berikut untuk uji coba: NIK <strong class="font-bold underline">3201010101010001</strong> (Supardi) atau <strong class="font-bold underline">3201010101010002</strong> (Maimunah).</p>
+        </div>
+      </div>
+
+      <!-- Live Simulation Custom Alert Notification Toast Box -->
+      <div id="sim-alert-box" class="hidden p-4 rounded-2xl text-xs font-bold transition-all duration-300 border flex items-start gap-3">
+        <i id="sim-alert-icon" class="text-base"></i>
+        <div id="sim-alert-text" class="flex-1 leading-relaxed"></div>
+      </div>
+
+      <!-- VIEW 1: TIMSES INTERFACE PANEL (Generic Voter Classification Form) -->
+      <section id="panel-timses-interface" class="space-y-4">
+        <div class="bg-white p-5 rounded-[2rem] border border-slate-200/80 shadow-md space-y-4 relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-2 h-full bg-[#1E3E62]"></div>
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-sm font-black text-navy-dark uppercase tracking-widest flex items-center gap-2">
+              <i class="fa-solid fa-id-card text-gold"></i> Perekaman Suara DPT
+            </h2>
+            <p class="text-[10px] text-slate-400 mt-1 font-semibold leading-relaxed">Lakukan verifikasi NIK warga secara rigid sebelum melakukan pemetaan pilihan konstituen.</p>
+          </div>
+
+          <!-- Strict Validation Form -->
+          <form id="form-voter-record" onsubmit="handleVoterSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">Nomor Induk Kependudukan (NIK)</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                  <i class="fa-solid fa-fingerprint text-xs"></i>
+                </span>
+                <input type="number" id="voter-nik" required 
+                  class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0B192C] focus:bg-white text-sm font-semibold tracking-widest transition-all" 
+                  placeholder="Masukkan 16 digit NIK DPT">
+              </div>
+            </div>
+
+            <!-- Single-Tap Interaction Nodes (Emerald, Crimson, Amber buttons) -->
+            <div>
+              <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-2">Klasifikasi Pilihan Warga</label>
+              <div class="grid grid-cols-3 gap-2.5">
+                <button type="button" onclick="selectClass('PRO', this)" id="btn-class-pro"
+                  class="py-3 px-2 border-2 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 font-extrabold text-[10px] tracking-wide rounded-xl active:scale-[0.95] transition-all flex flex-col items-center gap-1.5">
+                  <i class="fa-solid fa-face-smile text-lg"></i>
+                  <span>PRO</span>
+                </button>
+                <button type="button" onclick="selectClass('KONTRA', this)" id="btn-class-kontra"
+                  class="py-3 px-2 border-2 border-slate-200 bg-slate-50 text-slate-500 font-extrabold text-[10px] tracking-wide rounded-xl active:scale-[0.95] transition-all flex flex-col items-center gap-1.5">
+                  <i class="fa-solid fa-face-frown text-lg"></i>
+                  <span>KONTRA</span>
+                </button>
+                <button type="button" onclick="selectClass('RAGU-RAGU', this)" id="btn-class-ragu"
+                  class="py-3 px-2 border-2 border-slate-200 bg-slate-50 text-slate-500 font-extrabold text-[10px] tracking-wide rounded-xl active:scale-[0.95] transition-all flex flex-col items-center gap-1.5">
+                  <i class="fa-solid fa-face-meh text-lg"></i>
+                  <span>RAGU-RAGU</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Submit Node Trigger -->
+            <button type="submit" id="btn-voter-submit"
+              class="w-full py-4 px-6 bg-gradient-premium hover:opacity-95 text-white font-black text-xs tracking-widest rounded-2xl shadow-xl transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2">
+              <span>SINKRONISASI KE CLOUD</span>
+              <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Simulated Active Database Counter Cards for Field Feel -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm"><i class="fa-solid fa-user-check"></i></div>
+            <div>
+              <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Warga Terdata</span>
+              <span class="text-base font-extrabold text-slate-800" id="sim-count-terdata">1 Warga</span>
+            </div>
+          </div>
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center text-sm"><i class="fa-solid fa-database"></i></div>
+            <div>
+              <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Database DPT</span>
+              <span class="text-base font-extrabold text-slate-800">5 Warga</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: SAKSI INTERFACE PANEL (Specific TPS Real-Count Form - Hidden by Default) -->
+      <section id="panel-saksi-interface" class="hidden space-y-4">
+        <div class="bg-white p-5 rounded-[2rem] border border-slate-200/80 shadow-md space-y-4 relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-2 h-full bg-[#D4AF37]"></div>
+          <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-black text-navy-dark uppercase tracking-widest flex items-center gap-2">
+                <i class="fa-solid fa-square-poll-vertical text-gold"></i> C1 Real-Count (TPS 01)
+              </h2>
+              <p class="text-[10px] text-slate-400 mt-1 font-semibold leading-relaxed">Laporkan hasil fisik perhitungan perolehan suara sah di TPS 01 Krajan.</p>
+            </div>
+            
+            <!-- Quick simulated lock toggle for testers to try locking mechanism -->
+            <button type="button" onclick="toggleSimTpsLock()" id="sim-lock-indicator"
+              class="px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-wider border border-emerald-500/30 bg-emerald-50 text-emerald-600">
+              LOCK: OPEN
+            </button>
+          </div>
+
+          <!-- Real Count Input Form Wrapper -->
+          <form id="form-realcount-record" onsubmit="handleRealCountSubmit(event)" class="space-y-4">
+            
+            <div class="space-y-3.5">
+              <div>
+                <label class="block text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 mb-1.5">A. Suara Calon Kita (Paslon 1)</label>
+                <input type="number" id="rc-suara-kita" required min="0" value="0"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-extrabold text-emerald-600 text-center transition-all">
+              </div>
+              
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">B. Paslon 2 (Lawan 1)</label>
+                  <input type="number" id="rc-suara-lawan1" required min="0" value="0"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0B192C] text-sm font-bold text-center text-slate-700 transition-all">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">C. Paslon 3 (Lawan 2)</label>
+                  <input type="number" id="rc-suara-lawan2" required min="0" value="0"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0B192C] text-sm font-bold text-center text-slate-700 transition-all">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">D. Suara Tidak Sah / Rusak</label>
+                <input type="number" id="rc-suara-rusak" required min="0" value="0"
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-400 text-sm font-bold text-center text-slate-600 transition-all">
+              </div>
+            </div>
+
+            <!-- Lock and Submit Action Buttons -->
+            <button type="submit" id="btn-rc-submit"
+              class="w-full py-4 px-6 bg-gradient-gold text-navy-dark font-black text-xs tracking-widest rounded-2xl shadow-xl transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2">
+              <span>SIMPAN & KUNCI REAL-COUNT</span>
+              <i class="fa-solid fa-lock text-xs"></i>
+            </button>
+          </form>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (Static/Preserved iOS style) -->
+    <footer class="absolute bottom-0 inset-x-0 h-16 bg-white border-t border-slate-100 flex items-center justify-around text-slate-400 px-4 shrink-0 z-30 shadow-lg">
+      <div class="flex flex-col items-center text-navy-dark text-[9px] font-extrabold tracking-widest uppercase">
+        <i class="fa-solid fa-square-plus text-lg text-gold mb-0.5 animate-pulse"></i>
+        <span>OPERASIONAL</span>
+      </div>
+      <div class="flex flex-col items-center opacity-40 text-[9px] font-extrabold tracking-widest uppercase cursor-not-allowed" onclick="alert('Menu galeri dinonaktifkan dalam mode pratinjau standalone')">
+        <i class="fa-solid fa-images text-lg mb-0.5"></i>
+        <span>DOKUMEN</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // Simulated Local Databases
+    const mockDPT = [
+      { nik: "3201010101010001", no_kk: "3201010102020001", nama_warga: "Supardi Santoso", dusun: "Krajan", rt: "01", rw: "02", tps_id: "TPS-01" },
+      { nik: "3201010101010002", no_kk: "3201010102020001", nama_warga: "Siti Maimunah", dusun: "Krajan", rt: "01", rw: "02", tps_id: "TPS-01" },
+      { nik: "3201010101010003", no_kk: "3201010102020002", nama_warga: "Slamet Junaidi", dusun: "Krajan", rt: "02", rw: "02", tps_id: "TPS-01" },
+      { nik: "3201010101010004", no_kk: "3201010102020003", nama_warga: "Joko Triyono", dusun: "Ngraho", rt: "01", rw: "01", tps_id: "TPS-02" },
+      { nik: "3201010101010005", no_kk: "3201010102020003", nama_warga: "Siti Aminah", dusun: "Ngraho", rt: "01", rw: "01", tps_id: "TPS-02" }
+    ];
+
+    const mockWargaTerdata = [
+      { voter_id: "VTR-01", nik: "3201010101010005", klasifikasi: "PRO", input_by: "timses1" }
+    ];
+
+    let currentSelectedClass = 'PRO'; // Default
+    let simulatedTpsLockStatus = "No"; // OPEN
+
+    // Switch Role simulation
+    function switchRoleSim() {
+      const selectedRole = document.getElementById('sim-role-switcher').value;
+      const timsesPanel = document.getElementById('panel-timses-interface');
+      const saksiPanel = document.getElementById('panel-saksi-interface');
+      const nameHeader = document.getElementById('header-user-display');
+      
+      hideAlert();
+
+      if (selectedRole === 'TIMSES') {
+        timsesPanel.classList.remove('hidden');
+        saksiPanel.classList.add('hidden');
+        nameHeader.innerText = "Rahmat Lapangan";
+      } else {
+        timsesPanel.classList.add('hidden');
+        saksiPanel.classList.remove('hidden');
+        nameHeader.innerText = "Agus Saksi (TPS 01)";
+      }
+    }
+
+    // Single-Tap selector node implementation
+    function selectClass(classification, buttonElement) {
+      currentSelectedClass = classification;
+      
+      // Reset all buttons to default grey state
+      const buttons = ['btn-class-pro', 'btn-class-kontra', 'btn-class-ragu'];
+      buttons.forEach(id => {
+        const btn = document.getElementById(id);
+        btn.className = "py-3 px-2 border-2 border-slate-200 bg-slate-50 text-slate-500 font-extrabold text-[10px] tracking-wide rounded-xl active:scale-[0.95] transition-all flex flex-col items-center gap-1.5";
+      });
+
+      // Style only selected button with proper tactical colors
+      if (classification === 'PRO') {
+        buttonElement.className = "py-3 px-2 border-2 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 font-extrabold text-[10px] tracking-wide rounded-xl active:scale-[0.95] transition-all flex flex-col items-center gap-1.5";
+      } else if (classification === 'KONTRA') {
+        buttonElement.className = "py-3 px-2 border-2 border-red-500/30 bg-red-500/10 text-red-600 font-extrabold text-[10px] tracking-wide rounded-xl active:scale-[0.95] transition-all flex flex-col items-center gap-1.5";
+      } else if (classification === 'RAGU-RAGU') {
+        buttonElement.className = "py-3 px-2 border-2 border-amber-500/30 bg-amber-500/10 text-amber-600 font-extrabold text-[10px] tracking-wide rounded-xl active:scale-[0.95] transition-all flex flex-col items-center gap-1.5";
+      }
+    }
+
+    // Voter Form Double-Check Validation simulation
+    function handleVoterSubmit(e) {
+      e.preventDefault();
+      const inputNik = document.getElementById('voter-nik').value.trim();
+      const btn = document.getElementById('btn-voter-submit');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> MEMVERIFIKASI...';
+
+      setTimeout(() => {
+        // Step 1: Match against master DPT list
+        const dptMatch = mockDPT.find(d => d.nik === inputNik);
+        if (!dptMatch) {
+          showAlert("error", "Data warga tidak terdaftar dalam DPT!");
+          btn.disabled = false;
+          btn.innerHTML = '<span>SINKRONISASI KE CLOUD</span> <i class="fa-solid fa-cloud-arrow-up text-xs"></i>';
+          return;
+        }
+
+        // Step 2: Cek duplicated submissions
+        const duplicateMatch = mockWargaTerdata.find(v => v.nik === inputNik);
+        if (duplicateMatch) {
+          showAlert("error", `NIK ini sudah didata sebelumnya oleh Timses! (Tercatat sebagai: ${duplicateMatch.klasifikasi})`);
+          btn.disabled = false;
+          btn.innerHTML = '<span>SINKRONISASI KE CLOUD</span> <i class="fa-solid fa-cloud-arrow-up text-xs"></i>';
+          return;
+        }
+
+        // Step 3: Write Entry
+        mockWargaTerdata.push({
+          voter_id: "VTR-" + Math.floor(Math.random() * 100),
+          nik: inputNik,
+          klasifikasi: currentSelectedClass,
+          input_by: "timses1"
+        });
+
+        // Update Counter
+        document.getElementById('sim-count-terdata').innerText = `${mockWargaTerdata.length} Warga`;
+
+        showAlert("success", `Data pemilih "${dptMatch.nama_warga}" (${currentSelectedClass}) berhasil diamankan dan masuk cloud!`);
+        document.getElementById('voter-nik').value = "";
+        btn.disabled = false;
+        btn.innerHTML = '<span>SINKRONISASI KE CLOUD</span> <i class="fa-solid fa-cloud-arrow-up text-xs"></i>';
+      }, 1000);
+    }
+
+    // Toggle simulated TPS lock
+    function toggleSimTpsLock() {
+      const lockButton = document.getElementById('sim-lock-indicator');
+      const submitBtn = document.getElementById('btn-rc-submit');
+      const inputs = ['rc-suara-kita', 'rc-suara-lawan1', 'rc-suara-lawan2', 'rc-suara-rusak'];
+
+      if (simulatedTpsLockStatus === "No") {
+        simulatedTpsLockStatus = "Yes";
+        lockButton.innerText = "LOCK: YES";
+        lockButton.className = "px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-wider border border-red-500/30 bg-red-50 text-red-600";
         
-        <form id="form-voter-submission" onsubmit="appEngine.field.submitVoter(event)" class="space-y-4">
-          <div>
-            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">Nomor Induk Kependudukan (NIK)</label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"><i class="fa-solid fa-fingerprint text-xs"></i></span>
-              <input type="number" id="field-voter-nik" required class="w-full pl-9 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-950 text-sm tracking-widest font-black text-slate-700 [appearance:textfield] [&::-webkit-outer-spin-button]:margin-0 [&::-webkit-inner-spin-button]:margin-0" placeholder="16 Digit Angka NIK">
-            </div>
-          </div>
-          
-          <div>
-            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">Klasifikasi Orientasi Dukungan</label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"><i class="fa-solid fa-sliders text-xs"></i></span>
-              <select id="field-voter-class" required class="w-full pl-9 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-950 text-sm font-bold text-slate-700 appearance-none">
-                <option value="" disabled selected>Pilih Orientasi Konstituen...</option>
-                <option value="Pro" class="text-emerald-600 font-bold">PRO (Dukung Calon Kita)</option>
-                <option value="Kontra" class="text-red-600 font-bold">KONTRA (Dukung Lawan)</option>
-                <option value="Ragu-ragu" class="text-amber-600 font-bold">RAGU-RAGU / Swing Voters</option>
-              </select>
-            </div>
-          </div>
-          
-          <button type="submit" class="w-full mt-2 py-4 bg-navy-dark hover:bg-navy-light text-gold font-extrabold text-xs tracking-widest rounded-2xl shadow-lg transition duration-200 transform active:scale-[0.97] flex items-center justify-center gap-2">
-            <i class="fa-solid fa-shield-check text-xs"></i> VERIFIKASI & AMANKAN DATA
-          </button>
-        </form>
-      </div>
-    </section>
+        // Disabled inputs & submit trigger to showcase Saksi lock view rule
+        inputs.forEach(id => document.getElementById(id).disabled = true);
+        submitBtn.disabled = true;
+        submitBtn.className = "w-full py-4 px-6 bg-slate-200 border border-slate-300 text-slate-400 font-black text-xs tracking-widest rounded-2xl cursor-not-allowed flex items-center justify-center gap-2";
+        submitBtn.innerHTML = '<span>DATA DIKUNCI ADMIN</span> <i class="fa-solid fa-lock text-xs"></i>';
+        
+        showAlert("error", "Form ini terkunci karena status_lock_suara di TPS 01 bernilai 'Yes'. Data tidak boleh diubah!");
+      } else {
+        simulatedTpsLockStatus = "No";
+        lockButton.innerText = "LOCK: OPEN";
+        lockButton.className = "px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-wider border border-emerald-500/30 bg-emerald-50 text-emerald-600";
+        
+        // Re-enable inputs
+        inputs.forEach(id => document.getElementById(id).disabled = false);
+        submitBtn.disabled = false;
+        submitBtn.className = "w-full py-4 px-6 bg-gradient-gold text-navy-dark font-black text-xs tracking-widest rounded-2xl shadow-xl transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2";
+        submitBtn.innerHTML = '<span>SIMPAN & KUNCI REAL-COUNT</span> <i class="fa-solid fa-lock text-xs"></i>';
+        
+        hideAlert();
+      }
+    }
 
-    <!-- PANEL B: Saksi C1 Real Count -->
-    <section id="pane-saksi-realcount" class="hidden space-y-4">
-      <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm space-y-5 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-2 h-full bg-gold"></div>
-        <div class="border-b border-slate-100 pb-3">
-          <h2 class="text-xs font-black text-navy-dark uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-square-poll-horizontal text-gold text-sm"></i> Input Berita Acara C1 TPS</h2>
-          <p class="text-[11px] text-slate-400 mt-1 font-semibold leading-relaxed">Salin angka perolehan suara secara presisi dari fisik dokumen lembaran C1 plano hasil perhitungan resmi TPS.</p>
-        </div>
+    // Real-count Form submit
+    function handleRealCountSubmit(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('btn-rc-submit');
+      
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> MENGUNCI HASIL...';
 
-        <form id="form-realcount-submission" onsubmit="appEngine.field.submitRealCount(event)" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">Suara Calon Kita</label>
-              <input type="number" id="rc-suara-kita" required min="0" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-950 text-base font-black text-center text-emerald-600 shadow-sm">
-            </div>
-            <div>
-              <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">Suara Lawan 1</label>
-              <input type="number" id="rc-suara-lawan1" required min="0" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-950 text-base font-black text-center text-red-500 shadow-sm">
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">Suara Lawan 2</label>
-              <input type="number" id="rc-suara-lawan2" required min="0" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-950 text-base font-black text-center text-red-500 shadow-sm">
-            </div>
-            <div>
-              <label class="block text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-1.5">Suara Tidak Sah</label>
-              <input type="number" id="rc-suara-rusak" required min="0" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-950 text-base font-black text-center text-slate-600 shadow-sm">
-            </div>
-          </div>
-          
-          <button type="submit" id="btn-rc-submit" class="w-full mt-3 py-4 bg-navy-dark hover:bg-navy-light text-gold font-extrabold text-xs tracking-widest rounded-2xl shadow-lg transition duration-200 transform active:scale-[0.97] flex items-center justify-center gap-2">
-            <i class="fa-solid fa-lock text-xs"></i> KUNCI & LAPORKAN HASIL TPS
-          </button>
-        </form>
-      </div>
-    </section>
-  </main>
+      setTimeout(() => {
+        showAlert("success", "C1 plano berhasil dikunci! Data perolehan suara sah terkirim langsung ke Control Room.");
+        // Auto lock input to simulate production logic rules
+        toggleSimTpsLock();
+      }, 1000);
+    }
 
-  <footer class="absolute bottom-0 inset-x-0 h-14 bg-white border-t border-slate-200 flex items-center justify-around text-slate-400 px-6 z-40 shadow-md">
-    <div class="flex flex-col items-center text-navy-dark text-[9px] font-extrabold uppercase tracking-widest">
-      <i class="fa-solid fa-folder-open text-base text-gold mb-0.5 animate-pulse"></i>
-      <span>Operasional</span>
-    </div>
-  </footer>
-</div>
+    // Alert controls
+    function showAlert(type, msg) {
+      const box = document.getElementById('sim-alert-box');
+      const icon = document.getElementById('sim-alert-icon');
+      const text = document.getElementById('sim-alert-text');
+
+      if (type === "success") {
+        box.className = "p-4 rounded-2xl text-xs font-bold transition-all duration-300 border bg-emerald-500/10 text-emerald-400 border-emerald-500/30 flex items-start gap-3 shadow-md";
+        icon.className = "fa-solid fa-circle-check text-emerald-400 mt-0.5 text-base";
+      } else {
+        box.className = "p-4 rounded-2xl text-xs font-bold transition-all duration-300 border bg-red-500/10 text-red-400 border-red-500/30 flex items-start gap-3 shadow-md";
+        icon.className = "fa-solid fa-circle-exclamation text-red-400 mt-0.5 text-base";
+      }
+      text.innerText = msg;
+      box.classList.remove('hidden');
+    }
+
+    function hideAlert() {
+      document.getElementById('sim-alert-box').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
