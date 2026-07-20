@@ -98,7 +98,7 @@ const appEngine = {
           return {
             status: "success",
             token: "SIM-TOKEN-" + Math.floor(Math.random() * 10000000),
-            user: { user_id: matched.user_id, nama_lengkap: matched.nama_lengkap, role: matched.role }
+            user: { user_id: matched.user_id, nama_lengkap: matched.nama_lengkap, role: matched.role.toUpperCase() }
           };
         }
         return { status: "error", message: "Username atau password salah!" };
@@ -204,7 +204,7 @@ const appEngine = {
 
   // Sistem router pemindah halaman dinamis (Single Page Application)
   router: {
-    // REVISI ARCHITECT: Mengubah underscore (_) menjadi strip (-) agar sinkron dengan file fisik di GitHub lu!
+    // KUNCI UTAMA PERBAIKAN: Mengubah underscore (_) menjadi strip (-) agar sesuai nama file di GitHub
     views: {
       login: "login.html",
       ADMIN: "dashboard-admin.html",
@@ -220,8 +220,7 @@ const appEngine = {
         </div>`;
 
       try {
-        // REVISI ARCHITECT: Normalisasi case role agar kebal terhadap mismatch huruf besar/kecil database
-        const normalizedRole = (role || "").toString().trim().toUpperCase();
+        const normalizedRole = role ? role.toUpperCase() : "LOGIN";
         const viewFile = this.views[normalizedRole] || this.views.login;
         const res = await fetch(viewFile);
         if (!res.ok) throw new Error("Template HTML tidak ditemukan.");
@@ -251,8 +250,8 @@ const appEngine = {
       const activeTab = document.getElementById(`tab-${tabId}`);
       if (activeTab) activeTab.classList.remove("hidden");
 
-      if (event && event.currentTarget) {
-        event.currentTarget.classList.add("text-gold", "bg-slate-800/60");
+      if (window.event && window.event.currentTarget) {
+        window.event.currentTarget.classList.add("text-gold", "bg-slate-800/60");
       }
     }
   },
@@ -260,15 +259,19 @@ const appEngine = {
   // Subsistem Otentikasi Pengguna
   auth: {
     submit: async function(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const btn = document.getElementById("btn-login-submit");
       const alertBox = document.getElementById("login-alert");
 
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-rotate animate-spin mr-2"></i> MEMVERIFIKASI...`;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-rotate animate-spin mr-2"></i> MEMVERIFIKASI...`;
+      }
 
-      const username = document.getElementById("login-username").value;
-      const password = document.getElementById("login-password").value;
+      const usernameEl = document.getElementById("login-username");
+      const passwordEl = document.getElementById("login-password");
+      const username = usernameEl ? usernameEl.value : "";
+      const password = passwordEl ? passwordEl.value : "";
 
       const res = await appEngine.request("login", { username, password });
 
@@ -277,11 +280,15 @@ const appEngine = {
         appEngine.session.user = res.user;
         appEngine.router.loadView(res.user.role);
       } else {
-        alertBox.className = "mb-6 p-4 rounded-2xl text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/30 shadow-md";
-        alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-2"></i> ${res.message}`;
-        alertBox.classList.remove("hidden");
-        btn.disabled = false;
-        btn.innerHTML = `<span>MASUK RUANG OPERASIONAL</span> <i class="fa-solid fa-right-to-bracket text-xs"></i>`;
+        if (alertBox) {
+          alertBox.className = "mb-6 p-4 rounded-2xl text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/30 shadow-md";
+          alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-2"></i> ${res.message}`;
+          alertBox.classList.remove("hidden");
+        }
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<span>MASUK RUANG OPERASIONAL</span> <i class="fa-solid fa-right-to-bracket text-xs"></i>`;
+        }
       }
     },
 
@@ -426,7 +433,6 @@ const appEngine = {
 
       switch(this.activeSubTab) {
         case "subtab-dpt":
-          // TAB 1: TOTAL DATA DPT
           head.innerHTML = `
             <tr>
               <th class="p-3">Nama Warga</th>
@@ -459,7 +465,6 @@ const appEngine = {
           break;
 
         case "subtab-rt-rw":
-          // TAB 2: REKAP WARGA PER RT/RW
           head.innerHTML = `
             <tr>
               <th class="p-3">Lokasi RT/RW</th>
@@ -482,7 +487,6 @@ const appEngine = {
           break;
 
         case "subtab-kk":
-          // TAB 3: REKAP WARGA PER KK
           head.innerHTML = `
             <tr>
               <th class="p-3">Nomor Kartu Keluarga (KK)</th>
@@ -495,7 +499,6 @@ const appEngine = {
             const dptList = JSON.parse(localStorage.getItem("sim_data_dpt"));
             const voters = JSON.parse(localStorage.getItem("sim_warga_voters"));
             
-            // Map members to Family Card (KK)
             const kkMap = {};
             dptList.forEach(item => {
               if (!kkMap[item.no_kk]) {
@@ -523,7 +526,6 @@ const appEngine = {
           break;
 
         case "subtab-timses":
-          // TAB 4: REKAP DATA HASIL TIMSES
           head.innerHTML = `
             <tr>
               <th class="p-3">Petugas Penginput (Timses)</th>
@@ -550,7 +552,6 @@ const appEngine = {
           break;
 
         case "subtab-unvisited":
-          // TAB 5: REKAP WARGA BELUM DIKUNJUNGI (RAGU-RAGU / BLANK)
           head.innerHTML = `
             <tr>
               <th class="p-3">Nama Warga</th>
@@ -588,7 +589,7 @@ const appEngine = {
     },
 
     saveSettings: async function(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const payload = {
         nama_calon_kades: document.getElementById("setting-candidate-name").value
       };
@@ -598,7 +599,7 @@ const appEngine = {
     },
 
     submitRegister: async function(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const alertBox = document.getElementById("register-alert");
       const payload = {
         nama_lengkap: document.getElementById("reg-name").value,
@@ -608,9 +609,11 @@ const appEngine = {
 
       const res = await appEngine.request("registerTimses", payload);
       
-      alertBox.className = `p-3 rounded-xl text-xs font-bold mb-4 ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
-      alertBox.innerText = res.message;
-      alertBox.classList.remove("hidden");
+      if (alertBox) {
+        alertBox.className = `p-3 rounded-xl text-xs font-bold mb-4 ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
+        alertBox.innerText = res.message;
+        alertBox.classList.remove("hidden");
+      }
 
       if (res.status === "success") {
         document.getElementById("form-register-timses").reset();
@@ -628,18 +631,20 @@ const appEngine = {
     },
 
     submitVoter: async function(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const alertBox = document.getElementById("field-alert");
       const nik = document.getElementById("field-voter-nik").value;
       const klasifikasi = document.getElementById("field-voter-class").value;
 
       const res = await appEngine.request("submitVoter", { nik, klasifikasi });
 
-      alertBox.className = `p-4 rounded-2xl text-xs font-extrabold mb-4 shadow-sm ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
-      alertBox.innerHTML = res.status === 'success' 
-        ? `<i class="fa-solid fa-circle-check mr-2"></i> ${res.message}`
-        : `<i class="fa-solid fa-triangle-exclamation mr-2"></i> ${res.message}`;
-      alertBox.classList.remove("hidden");
+      if (alertBox) {
+        alertBox.className = `p-4 rounded-2xl text-xs font-extrabold mb-4 shadow-sm ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
+        alertBox.innerHTML = res.status === 'success' 
+          ? `<i class="fa-solid fa-circle-check mr-2"></i> ${res.message}`
+          : `<i class="fa-solid fa-triangle-exclamation mr-2"></i> ${res.message}`;
+        alertBox.classList.remove("hidden");
+      }
 
       if (res.status === "success") {
         document.getElementById("form-voter-submission").reset();
@@ -647,7 +652,6 @@ const appEngine = {
     }
   },
 
-  // Utility ekspor data dan cetak lembar fisik
   utils: {
     exportTableCSV: function(tableId) {
       const table = document.getElementById(tableId);
