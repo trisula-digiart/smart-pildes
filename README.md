@@ -1,99 +1,120 @@
-# 📑 PANDUAN PEREKAYASAAN DATABASE RELASIONAL (GOOGLE SHEETS)
+📑 PVS DATABASE AND CONFIGURATION SCHEMATICS v7.0
 
-Agar seluruh arsitektur backend `Kode.gs` dapat berjalan dengan lancar tanpa error relasional, pastikan Anda membuat **6 nama Sheet** di dalam Google Spreadsheet Anda dengan struktur kolom persis (dimulai dari Kolom A baris ke-1) sebagai berikut:
+Dokumentasi spesifikasi struktur data relasional Google Sheets untuk mendukung fungsionalitas core logic backend Kode.gs dan frontend app.js.
 
-### 1. Sheet: `app_settings`
-| Kolom A | Kolom B | Kolom C | Kolom D | Kolom E |
-| :--- | :--- | :--- | :--- | :--- |
-| **id_setting** | **nama_calon_kades** | **drive_id_foto_login** | **drive_id_foto_dashboard** | **updated_at** |
-*Isi Baris ke-2 dengan dummy data awal, misal: `SET-01`, `H. Ahmad Fauzi`, ``, ``, `2026-07-20`*
+📐 Panduan Penamaan Sheet & Header Kolom (Wajib di Baris Ke-1)
 
-### 2. Sheet: `users`
-| Kolom A | Kolom B | Kolom C | Kolom D | Kolom E | Kolom F | Kolom G |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **user_id** | **username** | **password_hash** | **nama_lengkap** | **role** | **tps_id** | **status_aktif** |
-*Dummy Data untuk Testing Akses:*
-* `USR-01` | `admin` | `admin123` | `Budi Setiawan` | `Admin` |  | `Active`
-* `USR-02` | `timses1` | `timses123` | `Rahmat Lapangan` | `Timses` |  | `Active`
-* `USR-03` | `saksi1` | `saksi123` | `Agus Saksi` | `Saksi` | `TPS-01` | `Active`
+Untuk memastikan interkoneksi data tidak mengalami error, buat 4 buah Tab Sheet baru di Google Spreadsheet Anda dengan nama dan susunan header kolom persis seperti di bawah ini:
 
-### 3. Sheet: `data_dpt`
-| Kolom A | Kolom B | Kolom C | Kolom D | Kolom E | Kolom F | Kolom G |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **nik** | **no_kk** | **nama_warga** | **tps_id** | **dusun** | **rt** | **rw** |
-*Dummy Data untuk Testing Input Validasi:*
-* `3201010101010001` | `3201010101019999` | `Supardi` | `TPS-01` | `Krajan` | `01` | `02`
+1. Sheet: Pengaturan_Branding
 
-### 4. Sheet: `warga_voters`
-| Kolom A | Kolom B | Kolom C | Kolom D | Kolom E |
-| :--- | :--- | :--- | :--- | :--- |
-| **voter_id** | **nik** | **klasifikasi** | **input_by_user_id** | **created_at** |
+Kolom A: id_setting (PK)
 
-### 5. Sheet: `tps_real_count`
-| Kolom A | Kolom B | Kolom C | Kolom D | Kolom E | Kolom F | Kolom G | Kolom H | Kolom I |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **tps_id** | **nama_tps** | **total_dpt_tps** | **suara_calon_kita** | **suara_lawan_1** | **suara_lawan_2** | **suara_tidak_sah** | **saksi_user_id** | **status_lock_suara** |
-*Dummy Data Awal:*
-* `TPS-01` | `TPS 01 Desa Krajan` | `300` | `0` | `0` | `0` | `0` |  | `No`
+Kolom B: nama_calon_kades
 
-### 6. Sheet: `agenda_laporan`
-| Kolom A | Kolom B | Kolom C | Kolom D | Kolom E | Kolom F |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **laporan_id** | **tanggal_agenda** | **nama_kegiatan** | **deskripsi** | **foto_drive_id** | **submitted_by** |
+Kolom C: drive_id_foto_paslon
 
-# 📑 PVS DATABASE AND CONFIGURATION SCHEMATICS v5.6
+Kolom D: drive_id_banner_login
 
-Dokumentasi spesifikasi struktur data relasional Google Sheets untuk mendukung fungsionalitas core logic `Kode.gs`. 
+Kolom E: updated_at
 
-### 📐 Panduan Penamaan Sheet & Header Kolom (Baris 1)
+2. Sheet: User_Timses
 
-#### 1. Sheet: `app_settings`
-*   **Kolom A:** `id_setting`
-*   **Kolom B:** `nama_calon_kades`
-*   **Kolom C:** `drive_id_foto_login`
-*   **Kolom D:** `drive_id_foto_dashboard`
-*   **Kolom E:** `updated_at`
+Kolom A: user_id (PK)
 
-#### 2. Sheet: `users`
-*   **Kolom A:** `user_id`
-*   **Kolom B:** `username`
-*   **Kolom C:** `password_hash`
-*   **Kolom D:** `nama_lengkap`
-*   **Kolom E:** `role`
-*   **Kolom F:** `tps_id`
-*   **Kolom G:** `status_aktif`
+Kolom B: username
 
-#### 3. Sheet: `data_dpt`
-*   **Kolom A:** `nik`
-*   **Kolom B:** `no_kk`
-*   **Kolom C:** `nama_warga`
-*   **Kolom F:** `tps_id`
-*   **Kolom E:** `dusun`
-*   **Kolom F:** `rt`
-*   **Kolom G:** `rw`
+Kolom C: password_hash
 
-#### 4. Sheet: `warga_voters`
-*   **Kolom A:** `voter_id`
-*   **Kolom B:** `nik`
-*   **Kolom C:** `klasifikasi`
-*   **Kolom D:** `input_by_user_id`
-*   **Kolom E:** `created_at`
+Kolom D: nama_lengkap
 
-#### 5. Sheet: `tps_real_count`
-*   **Kolom A:** `tps_id`
-*   **Kolom B:** `nama_tps`
-*   **Kolom C:** `total_dpt_tps`
-*   **Kolom D:** `suara_calon_kita`
-*   **Kolom E:** `suara_lawan_1`
-*   **Kolom F:** `suara_lawan_2`
-*   **Kolom G:** `suara_tidak_sah`
-*   **Kolom H:** `saksi_user_id`
-*   **Kolom I:** `status_lock_suara`
+Kolom E: role (Isi dengan: ADMIN atau TIMSES)
 
-#### 6. Sheet: `agenda_laporan`
-*   **Kolom A:** `laporan_id`
-*   **Kolom B:** `tanggal_agenda`
-*   **Kolom C:** `nama_kegiatan`
-*   **Kolom D:** `deskripsi`
-*   **Kolom E:** `foto_drive_id`
-*   **Kolom F:** `submitted_by`
+Kolom F: status_aktif (Isi dengan: Active atau Inactive)
+
+Kolom G: last_login
+
+3. Sheet: DPT
+
+Kolom A: nik (PK)
+
+Kolom B: no_kk
+
+Kolom C: nama_warga
+
+Kolom D: dusun
+
+Kolom E: rt
+
+Kolom F: rw
+
+Kolom G: tps_id
+
+4. Sheet: Warga_Terdata
+
+Kolom A: voter_id (PK)
+
+Kolom B: nik (FK to DPT - Unique Constraint)
+
+Kolom C: klasifikasi (Isi dengan: PRO, KONTRA, atau RAGU-RAGU)
+
+Kolom D: input_by_user_id (FK to User_Timses)
+
+Kolom E: created_at
+
+🚀 Langkah Deploy Cepat (PPV-Gateway)
+
+Langkah 1: Setup Backend (Google Apps Script)
+
+Buka Google Sheets baru Anda.
+
+Klik menu Ekstensi -> Apps Script.
+
+Hapus semua kode bawaan, lalu paste seluruh isi file Kode.gs yang sudah kita buat sebelumnya.
+
+Klik tombol Simpan (ikon disket).
+
+Pada toolbar atas, pastikan fungsi yang terpilih adalah setupDatabase (jika ada), lalu klik Run (Jalankan). Langkah ini akan otomatis membuatkan seluruh tab sheet dan dummy data uji coba di Spreadsheet Anda tanpa perlu Anda ketik manual!
+
+Langkah 2: Deploy Sebagai Web App
+
+Di pojok kanan atas editor script, klik Terapkan (Deploy) -> Terapkan Baru (New Deployment).
+
+Pilih jenis penerapan: Aplikasi Web (Web App).
+
+Konfigurasi setelan:
+
+Jalankan sebagai: Saya (Email Anda)
+
+Yang memiliki akses: Siapa saja (Anyone)
+
+Klik Terapkan (Deploy) dan berikan izin akses (Authorize Access) ke Google Drive & Sheets Anda jika diminta.
+
+Salin URL Aplikasi Web (Web App URL) yang muncul di akhir proses.
+
+Langkah 3: Koneksikan ke Frontend (GitHub Pages)
+
+Buka file app.js yang ada di repositori GitHub lokal/online Anda.
+
+Temukan variabel const GAS_API_URL = ""; di baris paling atas (baris ke-9).
+
+Paste URL Aplikasi Web yang sudah Anda salin tadi di dalam tanda kutip tersebut. Contoh:
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycb.../exec";
+
+Simpan perubahan Anda, lalu commit dan push ke GitHub Pages Anda.
+
+🔑 Kredensial Akun Uji Coba (Demo Accounts)
+
+Jika Anda ingin mencoba fitur login dan simulasi sebelum menghubungkan API URL asli, silakan gunakan kredensial bawaan berikut:
+
+Akses Admin (Desktop Control Room):
+
+Username: admin
+
+Password: admin123
+
+Akses Timses (Mobile Field Form):
+
+Username: timses1
+
+Password: timses123
