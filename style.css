@@ -1,6 +1,6 @@
 /* ==========================================================
-   PILKADES VICTORY SYSTEM - PREMIUM VISUAL REVISION v5.4
-   Core Gradient, Custom Shadow, & High-End Typography Rules
+   PILKADES VICTORY SYSTEM - FRONTEND INTERFACE CUSTOM FRAMEWORK
+   Version : 5.6 Visual Supremacy [Industrial High-End Layout Spec]
    ========================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
@@ -11,18 +11,17 @@
   --color-gold-hover: #AA8B2C;
   --gradient-premium: linear-gradient(135deg, #0B192C 0%, #1E3E62 100%);
   --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #AA8B2C 100%);
-  --shadow-soft: 0 10px 30px -5px rgba(11, 25, 44, 0.05), 0 5px 15px -4px rgba(11, 25, 44, 0.03);
-  --shadow-premium: 0 20px 40px -10px rgba(11, 25, 44, 0.12);
+  --shadow-soft: 0 10px 30px -5px rgba(11, 25, 44, 0.04), 0 5px 15px -4px rgba(11, 25, 44, 0.02);
+  --shadow-premium: 0 20px 45px -12px rgba(11, 25, 44, 0.12);
 }
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #F4F7FA;
+  background-color: #F8FAFC;
   color: #1E293B;
   -webkit-text-size-adjust: 100%;
 }
 
-/* Custom Component Supremacy Classes */
 .bg-navy-dark { background-color: var(--color-navy-dark); }
 .bg-navy-light { background-color: var(--color-navy-light); }
 .bg-gradient-premium { background: var(--gradient-premium); }
@@ -30,47 +29,48 @@ body {
 .text-gold { color: var(--color-gold); }
 .border-gold { border-color: var(--color-gold); }
 
+/* Premium Visual Layout Specs Container Cards */
 .card-premium {
   background: #FFFFFF;
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.7);
   box-shadow: var(--shadow-soft);
-  border-radius: 1.25rem; /* rounded-2xl */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1.5rem; /* rounded-3xl */
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-premium:hover {
   box-shadow: var(--shadow-premium);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
-/* Custom Scrollbar for Dense Grid components */
+/* Custom Webkit scrollbar optimizations for dense analytical components */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: #F8FAFC;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 3px;
+  background: #E2E8F0;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #CBD5E1;
 }
 
-/* Viewport Scale Lock Engine Protection */
+/* Anti-forced zoom viewport rule enforcement */
 @viewport {
   user-scalable: no;
   initial-scale: 1.0;
   maximum-scale: 1.0;
 }
 
-/* Clean Media Printing Utilities */
+/* Print Sheet Styles Management */
 @media print {
   body { background: white; color: black; }
-  .no-print, nav, sidebar, button, #setting-form, .tab-buttons { display: none !important; }
-  .print-container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+  .no-print, nav, sidebar, button, #setting-form, header, footer { display: none !important; }
+  .print-container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
   table { width: 100% !important; border-collapse: collapse !important; }
-  th, td { border: 1px solid #E2E8F0 !important; padding: 10px !important; font-size: 11px !important; }
+  th, td { border: 1px solid #CBD5E1 !important; padding: 10px !important; font-size: 11px !important; color: #000 !important; }
 }
