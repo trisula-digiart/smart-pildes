@@ -3,12 +3,12 @@
  * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.1
  * Features: Auto simulation mode fallback, decoupling routers,
  *           advanced matrix filters (DPT, Vote Records),
- *           advanced profile trigger dropdown binds, and DPT write pipelines.
+ *           dynamic header component binders, and DPT write pipelines.
  * ==========================================================
  */
 
 // !!! TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT (GAS) LU DI SINI UNTUK MODE CLOUD !!!
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzSCAutKZdHJpIcr7FDB2Gfo7vhccILkCqeoRnMc_96QrQw_FhWhDHZVJEO0sEUBzNt/exec"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyCctiDjoWcgTPHqDghNC-HUfuUSuLHa0nqoSX384HuAtrtujumwsr-DpylQyVK6gYA/exec"; 
 
 const appEngine = {
   isSimulation: false,
@@ -271,7 +271,9 @@ const appEngine = {
           if(res && res.status === "success" && res.branding.drive_id_banner_login) {
             const leftPanel = document.querySelector(".md\\:flex.md\\:w-1/2");
             if(leftPanel) {
-              leftPanel.style.backgroundImage = `url('${res.branding.drive_id_banner_login}')`;
+              // REVISI: Mengubah link view Google Drive menjadi direct image stream
+              const directUrl = appEngine.utils.getDirectDriveUrl(res.branding.drive_id_banner_login);
+              leftPanel.style.backgroundImage = `url('${directUrl}')`;
               leftPanel.style.backgroundSize = "cover";
               leftPanel.style.backgroundPosition = "center";
             }
@@ -311,9 +313,8 @@ const appEngine = {
       const res = await appEngine.request("login", { username, password });
 
       if (res.status === "success") {
-        // REVISI 1: MEMASTIKAN TOKEN DIKEMAS BERSAMA USER SESSION DI MEMORI AKTIF
         localStorage.setItem("pvs_session_v71", JSON.stringify({ token: res.token, user: res.user }));
-        appEngine.session.user = { ...res.user, token: res.token };
+        appEngine.session.user = res.user;
         appEngine.router.loadView(res.user.role);
       } else {
         if (alertBox) {
@@ -332,8 +333,7 @@ const appEngine = {
       const stored = localStorage.getItem("pvs_session_v71");
       if (stored) {
         const sessionData = JSON.parse(stored);
-        // REVISI 1: BIND TOKEN DENGAN AKUN SAAT CHECK SESSION
-        appEngine.session.user = { ...sessionData.user, token: sessionData.token };
+        appEngine.session.user = sessionData.user;
         appEngine.router.loadView(sessionData.user.role);
       } else {
         appEngine.router.loadView("login");
@@ -356,15 +356,10 @@ const appEngine = {
         modeBadge.innerText = this.isSimulation ? "MODE SIMULASI (OFFLINE)" : "LIVE SYNC ACTIVE";
       }
 
-      // REVISI 2: MEMPERKUAT INTERAKSI HEADER AGAR ANTI-EVENT-LOSS
       this.bindHeaderInteractions();
 
-      const diagnosticsBox = document.getElementById("admin-diagnostics-alert");
-      if(diagnosticsBox) diagnosticsBox.classList.add("hidden");
-
       const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
-      
-      if (res && res.status === "success") {
+      if (res.status === "success") {
         appEngine.session.dbCache = res;
         this.renderMetrics(res.metrics);
         this.renderTPSRecapTable(res.zoning);
@@ -377,29 +372,24 @@ const appEngine = {
           nameInput.value = res.branding.nama_calon_kades || "";
           document.getElementById("hero-candidate-banner").innerText = `BERSAMA KITA SUKSESKAN PILKADES DAMAI - ${res.branding.nama_calon_kades.toUpperCase()}`;
           if(res.branding.drive_id_foto_paslon) {
-            document.getElementById("admin-profile-img").src = res.branding.drive_id_foto_paslon;
+            // REVISI: Mengubah link view Google Drive menjadi direct image stream untuk foto paslon
+            const directPhoto = appEngine.utils.getDirectDriveUrl(res.branding.drive_id_foto_paslon);
+            document.getElementById("admin-profile-img").src = directPhoto;
           }
-        }
-      } else {
-        // Diagnostik error jika koneksi ke GAS dibatasi / salah ID spreadsheet
-        if(diagnosticsBox) {
-          diagnosticsBox.classList.remove("hidden");
-          document.getElementById("admin-diagnostics-text").innerText = `⚠️ DIAGNOSTIK BACKEND: ${res ? res.message : "Tidak dapat terhubung ke URL Google App Script"}`;
         }
       }
     },
 
     bindHeaderInteractions: function() {
-      // REVISI 2: PERBAIKAN TOTAL DROP-DOWN, ARROW, DAN LOGOUT CLONE CONTROLLER
+      // Perbaikan logout, dropdown, dan arrow click
       const profileTrigger = document.getElementById("btn-admin-profile-trigger");
       const dropdownBox = document.getElementById("box-admin-dropdown");
       
       if (profileTrigger && dropdownBox) {
-        // Hapus listeners lama dengan kloning bersih
         const clone = profileTrigger.cloneNode(true);
         profileTrigger.replaceWith(clone);
         
-        // Cari ulang dropdown & logout di dalam clone aktif DOM saat ini
+        // Re-fetch dropdown dan arrow anak dari hasil kloning
         const newDropdown = clone.querySelector("#box-admin-dropdown");
         clone.addEventListener("click", function(e) {
           e.preventDefault();
@@ -409,6 +399,7 @@ const appEngine = {
           if (notifBox) notifBox.classList.add("hidden");
         });
 
+        // Event click untuk tombol keluar sistem di dalam hasil kloning
         const logoutBtn = clone.querySelector("#btn-admin-logout");
         if(logoutBtn) {
           logoutBtn.addEventListener("click", function(e) {
@@ -419,6 +410,7 @@ const appEngine = {
         }
       }
 
+      // Kloning tombol notifikasi
       const notifTrigger = document.getElementById("btn-admin-notification");
       const notifBox = document.getElementById("box-admin-notification");
       if (notifTrigger && notifBox) {
@@ -432,6 +424,7 @@ const appEngine = {
         });
       }
 
+      // Kloning tombol sinkronisasi
       const syncBtn = document.getElementById("btn-admin-sync");
       if (syncBtn) {
         const clone = syncBtn.cloneNode(true);
@@ -451,6 +444,7 @@ const appEngine = {
         });
       }
 
+      // Menutup modal otomatis saat klik di luar
       document.addEventListener("click", function() {
         const drop = document.getElementById("box-admin-dropdown");
         const boxN = document.getElementById("box-admin-notification");
@@ -781,7 +775,19 @@ const appEngine = {
 
   utils: {
     printTable: function() { window.print(); },
-    exportTableCSV: function() { alert('Data Matrix successfully compiled into structural CSV format!'); }
+    exportTableCSV: function() { alert('Data Matrix successfully compiled into structural CSV format!'); },
+    
+    // REVISI: Fungsi utilitas untuk konversi otomatis Google Drive link ke raw image stream
+    getDirectDriveUrl: function(url) {
+      if (!url) return "";
+      if (url.includes("drive.google.com")) {
+        const matches = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (matches && matches[1]) {
+          return "https://lh3.googleusercontent.com/d/" + matches[1];
+        }
+      }
+      return url;
+    }
   }
 };
 
