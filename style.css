@@ -1,25 +1,43 @@
-/* STREAMING_CHUNK: Configuring premium design tokens and typography... */
+/* STREAMING_CHUNK: Defining color variables and custom fonts... /
+/*
+
+==========================================================
+
+PILKADES VICTORY SYSTEM - PREMIUM CSS MASTER STYLESHEET
+
+Version : 7.0 Enterprise ready [TRISULA AI FRAMEWORK]
+
+Features: Design Tokens, Custom Scrollbars, Glassmorphism,
+
+      Anti-Forced Zoom, and Print Utilities.
+
+
+==========================================================
+*/
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --color-navy-dark: #0B192C;
-  --color-navy-light: #1E3E62;
-  --color-gold: #D4AF37;
-  --color-gold-hover: #AA8B2C;
-  --gradient-premium: linear-gradient(135deg, #0B192C 0%, #1E3E62 100%);
-  --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #AA8B2C 100%);
-  --shadow-soft: 0 10px 35px -5px rgba(11, 25, 44, 0.05), 0 5px 15px -4px rgba(11, 25, 44, 0.02);
-  --shadow-premium: 0 20px 50px -12px rgba(11, 25, 44, 0.15);
+--color-navy-dark: #0B192C;
+--color-navy-light: #1E3E62;
+--color-gold: #D4AF37;
+--color-gold-hover: #AA8B2C;
+--gradient-premium: linear-gradient(135deg, #0B192C 0%, #1E3E62 100%);
+--gradient-gold: linear-gradient(135deg, #D4AF37 0%, #AA8B2C 100%);
+--shadow-soft: 0 10px 30px -5px rgba(11, 25, 44, 0.04), 0 5px 15px -4px rgba(11, 25, 44, 0.02);
+--shadow-premium: 0 20px 45px -12px rgba(11, 25, 44, 0.12);
 }
 
+/* Global Reset to Use Premium Font */
 body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #F8FAFC;
-  color: #1E293B;
-  -webkit-text-size-adjust: 100%;
+font-family: 'Plus Jakarta Sans', sans-serif;
+background-color: #F8FAFC;
+color: #1E293B;
+-webkit-text-size-adjust: 100%;
 }
 
-/* STREAMING_CHUNK: Creating custom design supremacy classes... */
+/* STREAMING_CHUNK: Custom utility classes for dashboard elements... /
+/ Theme Accent Helpers */
 .bg-navy-dark { background-color: var(--color-navy-dark); }
 .bg-navy-light { background-color: var(--color-navy-light); }
 .bg-gradient-premium { background: var(--gradient-premium); }
@@ -27,47 +45,130 @@ body {
 .text-gold { color: var(--color-gold); }
 .border-gold { border-color: var(--color-gold); }
 
+/* Glassmorphism Class Utilities */
+.glass-premium {
+background: rgba(255, 255, 255, 0.8);
+backdrop-filter: blur(12px);
+-webkit-backdrop-filter: blur(12px);
+border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass-dark {
+background: rgba(11, 25, 44, 0.85);
+backdrop-filter: blur(16px);
+-webkit-backdrop-filter: blur(16px);
+border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Premium Card with Depth /
 .card-premium {
-  background: #FFFFFF;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: var(--shadow-soft);
-  border-radius: 1.5rem;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+background: #FFFFFF;
+border: 1px solid rgba(226, 232, 240, 0.8);
+box-shadow: var(--shadow-soft);
+border-radius: 1.5rem; / rounded-3xl */
+transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-premium:hover {
-  box-shadow: var(--shadow-premium);
-  transform: translateY(-3px);
+box-shadow: var(--shadow-premium);
+transform: translateY(-3px);
 }
 
-/* Custom Scrollbar */
+/* Custom Webkit scrollbar optimizations for dense analytical components */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+width: 6px;
+height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F8FAFC;
+background: #F8FAFC;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 4px;
+background: #E2E8F0;
+border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+background: #CBD5E1;
 }
 
-/* Viewport Scale Lock Engine */
+/* STREAMING_CHUNK: Layout lock and mobile viewport behavior adjustments... /
+/ Mobile Lock Protocol Enforcement */
+.mobile-locked-viewport {
+touch-action: none;
+overflow: hidden;
+position: fixed;
+width: 100%;
+height: 100%;
+user-select: none;
+-webkit-user-select: none;
+}
+
+/* Disable Erratic Scroll Behaviors of Container Form on HP */
+.scroll-hide::-webkit-scrollbar {
+display: none;
+}
+.scroll-hide {
+-ms-overflow-style: none;
+scrollbar-width: none;
+}
+
+/* Anti-forced zoom viewport protection */
 @viewport {
-  user-scalable: no;
-  initial-scale: 1.0;
-  maximum-scale: 1.0;
+user-scalable: no;
+initial-scale: 1.0;
+maximum-scale: 1.0;
+minimum-scale: 1.0;
 }
 
-/* STREAMING_CHUNK: Setting print style overrides... */
+/* STREAMING_CHUNK: Defining clean print overrides for document generation... /
+/ High-Fidelity Printing Rules for Report Generations */
 @media print {
-  body { background: white; color: black; }
-  .no-print, nav, sidebar, button, #setting-form, header, footer { display: none !important; }
-  .print-container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
-  table { width: 100% !important; border-collapse: collapse !important; }
-  th, td { border: 1px solid #CBD5E1 !important; padding: 10px !important; font-size: 11px !important; color: #000 !important; }
+body {
+background: white !important;
+color: black !important;
+font-size: 11px !important;
+}
+
+/* Hide unnecessary dynamic elements during paper printing */
+.no-print,
+aside,
+header,
+nav,
+footer,
+button,
+.subtab-bar,
+#setting-form,
+.dropdown-container-box {
+display: none !important;
+}
+
+/* Expand target tables to take full page width natively */
+.print-container {
+width: 100% !important;
+margin: 0 !important;
+padding: 0 !important;
+box-shadow: none !important;
+border: none !important;
+}
+
+table {
+width: 100% !important;
+border-collapse: collapse !important;
+page-break-inside: auto !important;
+}
+
+tr {
+page-break-inside: avoid !important;
+page-break-after: auto !important;
+}
+
+thead {
+display: table-header-group !important;
+}
+
+th, td {
+border: 1px solid #CBD5E1 !important;
+padding: 10px !important;
+font-size: 10px !important;
+color: #000000 !important;
+}
 }
