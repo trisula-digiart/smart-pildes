@@ -4,7 +4,7 @@
  */
 
 // GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA SETELAH DEPLOY
-const GAS_API_URL = "https://script.google.com/macros/s/XXXXX/exec"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyCctiDjoWcgTPHqDghNC-HUfuUSuLHa0nqoSX384HuAtrtujumwsr-DpylQyVK6gYA/exec"; 
 
 const appEngine = {
   // Session State Storage
