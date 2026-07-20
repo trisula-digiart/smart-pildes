@@ -2,27 +2,26 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <!-- Proteksi viewport ketat: mencegah zoom cubit (pinch-to-zoom) di mobile agar presisi dan kokoh -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pilkades Victory System - Decoupled Enterprise</title>
   
   <!-- Tailwind CSS Engine CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Plus Jakarta Sans untuk tipografi premium -->
+  <!-- Google Fonts: Plus Jakarta Sans -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- FontAwesome Pro Icons -->
+  <!-- FontAwesome Pro Icons Pack -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Chart.js untuk kebutuhan visualisasi grafik real-count di admin -->
+  <!-- Chart.js Engine -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- CSS Kustom yang berisi variabel warna, gradasi Deep Navy & Gold, serta rule cetak/print -->
+  <!-- Core Layout Styles Integration -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-[#F8FAFC] min-h-screen flex flex-col antialiased selection:bg-blue-900 selection:text-white">
 
-  <!-- Elemen #app-root ini adalah jangkar utama tempat login, admin dashboard, dan timses dashboard disuntik secara dinamis -->
+  <!-- Main System Anchor Dropzone -->
   <div id="app-root" class="w-full flex-1 flex flex-col">
-    <!-- Tampilan loading screen awal sebelum session token diverifikasi oleh app.js -->
+    <!-- Bootloader Core Startup Screen -->
     <div id="pvs-global-loader" class="flex-1 flex flex-col items-center justify-center p-8 bg-[#0B192C] text-white">
       <div class="relative flex items-center justify-center mb-6">
         <div class="animate-spin rounded-full h-16 w-16 border-4 border-t-transparent border-[#D4AF37]"></div>
@@ -32,7 +31,7 @@
     </div>
   </div>
 
-  <!-- File app.js bertindak sebagai mesin async, router, session checker, dan jembatan ke GAS API -->
+  <!-- Core JavaScript Runtime Engine -->
   <script src="app.js"></script>
 </body>
 </html>
