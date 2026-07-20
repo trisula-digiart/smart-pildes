@@ -3,7 +3,7 @@
  * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.1
  * Features: Auto simulation mode fallback, decoupling routers,
  *           advanced matrix filters (DPT, Vote Records),
- *           dynamic header component binders, and DPT write pipelines.
+ *           advanced profile trigger dropdown binds, and DPT write pipelines.
  * ==========================================================
  */
 
