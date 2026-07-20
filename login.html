@@ -1,0 +1,54 @@
+<!-- Component Payload Template - Split-Screen Premium Login Design Layout -->
+<div class="min-h-screen flex flex-col md:flex-row w-full">
+  
+  <!-- Left Column: Dynamic Banner Graphic Presentation Area -->
+  <div class="hidden md:flex md:w-1/2 bg-navy-dark items-center justify-center p-12 relative overflow-hidden border-r-4 border-gold">
+    <div class="absolute inset-0 bg-cover bg-center opacity-30" id="login-banner-bg" style="background-image: url('https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?q=80&w=1200');"></div>
+    <div class="relative z-10 text-center max-w-lg">
+      <h1 class="text-4xl font-extrabold text-white mb-4 tracking-tight">PILKADES <span class="text-gold">VICTORY SYSTEM</span></h1>
+      <div class="w-24 h-1 bg-gold mx-auto mb-6"></div>
+      <p class="text-slate-300 font-light text-lg">Platform Digital Integratif Pengawalan Suara & Manajemen Pemilih Lapangan Pemilihan Kepala Desa.</p>
+    </div>
+  </div>
+
+  <!-- Right Column: Clean Access Form Intermediary -->
+  <div class="flex-1 flex items-center justify-center p-6 sm:p-12 bg-slate-50">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+      <div class="text-center md:text-left mb-8">
+        <h2 class="text-2xl font-bold text-navy-dark">Selamat Datang Kembali</h2>
+        <p class="text-sm text-slate-500 mt-1">Silakan masukkan akun kredensial resmi Anda.</p>
+      </div>
+
+      <!-- Identity Alert Toast -->
+      <div id="login-alert" class="hidden mb-4 p-4 rounded-xl text-sm font-medium"></div>
+
+      <!-- Identity Core Form Handler -->
+      <form id="form-login-gate" onsubmit="appEngine.auth.submit(event)" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Username</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              <i class="fa-solid fa-user"></i>
+            </span>
+            <input type="text" id="login-username" required autocomplete="username" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent text-sm transition" placeholder="Masukkan nama pengguna">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input type="password" id="login-password" required autocomplete="current-password" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent text-sm transition" placeholder="••••••••">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-login-submit" class="w-full py-3.5 px-4 bg-navy-dark hover:bg-navy-light text-gold font-bold text-sm tracking-wide rounded-xl shadow-lg shadow-slate-200 transition duration-200 transform active:scale-95 flex items-center justify-center gap-2">
+          <span>MASUK KE SISTEM</span>
+          <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
