@@ -1,13 +1,13 @@
-/* STREAMING_CHUNK: Initializing frontend runtime and configuration state... */
 /**
  * ==========================================================
- * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v5.6
- * Features: Auto simulation mode fallback, routing, and high-fidelity views
+ * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.0
+ * Features: Auto simulation mode fallback, decoupling routers, 
+ *           multi-tab analytics, and high-fidelity views controller.
  * ==========================================================
  */
 
-// !!! SALIN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI !!!
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyCctiDjoWcgTPHqDghNC-HUfuUSuLHa0nqoSX384HuAtrtujumwsr-DpylQyVK6gYA/exec"; 
+// !!! TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT (GAS) LU DI SINI UNTUK MODE CLOUD !!!
+const GAS_API_URL = ""; 
 
 const appEngine = {
   isSimulation: false,
@@ -17,48 +17,51 @@ const appEngine = {
     dbCache: null
   },
 
-  // STREAMING_CHUNK: Bootloader initialization routing hook...
+  // Inisialisasi awal aplikasi saat halaman dimuat
   init: async function() {
     this.checkDatabaseFallback();
     this.auth.checkSession();
   },
 
-  // Check and setup LocalStorage simulation mode if Cloud URL is empty
+  // Mengatur database cadangan di browser jika GAS_API_URL masih kosong
   checkDatabaseFallback: function() {
     if (!GAS_API_URL || GAS_API_URL.trim() === "") {
       this.isSimulation = true;
-      console.log("PVS INFO: GAS URL Kosong. Beralih ke Mode Simulasi.");
+      console.log("⚠️ TRISULA KERNEL: GAS_API_URL kosong. Beralih ke Mode Simulasi Offline.");
       
-      // Initialize simulated local storage tables if not exist
+      // Setup data default untuk simulasi interaktif
       if (!localStorage.getItem("sim_app_settings")) {
         localStorage.setItem("sim_app_settings", JSON.stringify({
-          nama_calon_kades: "Ahmad Dwi Saputra"
+          nama_calon_kades: "Ahmad Dwi Saputra",
+          drive_id_foto_paslon: "",
+          drive_id_banner_login: ""
         }));
+      }
+      if (!localStorage.getItem("sim_users")) {
+        localStorage.setItem("sim_users", JSON.stringify([
+          { user_id: "USR-01", username: "admin", password_hash: "admin123", nama_lengkap: "Ahmad Dwi Saputra", role: "ADMIN", status_aktif: "Active" },
+          { user_id: "USR-02", username: "timses1", password_hash: "timses123", nama_lengkap: "Rahmat Lapangan", role: "TIMSES", status_aktif: "Active" }
+        ]));
       }
       if (!localStorage.getItem("sim_data_dpt")) {
         localStorage.setItem("sim_data_dpt", JSON.stringify([
-          { nik: "3201010101010001", nama_warga: "Supardi", tps_id: "TPS-01" },
-          { nik: "3201010101010002", nama_warga: "Maimunah", tps_id: "TPS-01" },
-          { nik: "3201010101010003", nama_warga: "Joko Widodo", tps_id: "TPS-02" }
+          { nik: "3201010101010001", no_kk: "3201010102020001", nama_warga: "Supardi Santoso", dusun: "Krajan", rt: "01", rw: "02", tps_id: "TPS-01" },
+          { nik: "3201010101010002", no_kk: "3201010102020001", nama_warga: "Siti Maimunah", dusun: "Krajan", rt: "01", rw: "02", tps_id: "TPS-01" },
+          { nik: "3201010101010003", no_kk: "3201010102020002", nama_warga: "Slamet Junaidi", dusun: "Krajan", rt: "02", rw: "02", tps_id: "TPS-01" },
+          { nik: "3201010101010004", no_kk: "3201010102020003", nama_warga: "Joko Triyono", dusun: "Ngraho", rt: "01", rw: "01", tps_id: "TPS-02" },
+          { nik: "3201010101010005", no_kk: "3201010102020003", nama_warga: "Siti Aminah", dusun: "Ngraho", rt: "01", rw: "01", tps_id: "TPS-02" }
         ]));
       }
       if (!localStorage.getItem("sim_warga_voters")) {
         localStorage.setItem("sim_warga_voters", JSON.stringify([
-          { voter_id: "VTR-1", nik: "3201010101010001", klasifikasi: "Pro", input_by: "timses1", created_at: new Date().toISOString() }
-        ]));
-      }
-      if (!localStorage.getItem("sim_tps_real_count")) {
-        localStorage.setItem("sim_tps_real_count", JSON.stringify([
-          { tps_id: "TPS-01", nama_tps: "TPS 01 Desa Krajan", total_dpt_tps: 300, suara_calon_kita: 150, suara_lawan_1: 80, suara_lawan_2: 40, suara_tidak_sah: 10, saksi_user_id: "saksi1", status_lock_suara: "No" },
-          { tps_id: "TPS-02", nama_tps: "TPS 02 Desa Ngraho", total_dpt_tps: 250, suara_calon_kita: 0, suara_lawan_1: 0, suara_lawan_2: 0, suara_tidak_sah: 0, saksi_user_id: "", status_lock_suara: "No" }
+          { voter_id: "VTR-01", nik: "3201010101010005", klasifikasi: "PRO", input_by_user_id: "USR-02", created_at: new Date().toISOString() }
         ]));
       }
     }
   },
 
-  // STREAMING_CHUNK: Defining fetch client and api gateways...
+  // Request broker pusat untuk komunikasi asinkronus ke server / lokal
   request: async function(action, payload = {}) {
-    // If running in simulation mode, bypass cloud and handle locally
     if (this.isSimulation) {
       return this.handleLocalSimulation(action, payload);
     }
@@ -68,120 +71,172 @@ const appEngine = {
         method: "POST",
         mode: "cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action, payload })
+        body: JSON.stringify({ action, ...payload })
       });
       return await response.json();
     } catch (error) {
-      console.error("Cloud connection failed, falling back to local simulation:", error);
+      console.error("❌ Cloud API connection failed. Force falling back to local simulation.", error);
       this.isSimulation = true;
       return this.handleLocalSimulation(action, payload);
     }
   },
 
-  // Local Simulation Engine for complete preview testing offline
+  // Simulating backend logic inside browser storage
   handleLocalSimulation: function(action, payload) {
     const settings = JSON.parse(localStorage.getItem("sim_app_settings"));
-    const voters = JSON.parse(localStorage.getItem("sim_warga_voters"));
-    const realCount = JSON.parse(localStorage.getItem("sim_tps_real_count"));
+    const users = JSON.parse(localStorage.getItem("sim_users"));
     const dpt = JSON.parse(localStorage.getItem("sim_data_dpt"));
+    const voters = JSON.parse(localStorage.getItem("sim_warga_voters"));
 
     switch(action) {
       case "login":
-        if ((payload.username === "admin" && payload.password === "admin123") ||
-            (payload.username === "timses1" && payload.password === "timses123") ||
-            (payload.username === "saksi1" && payload.password === "saksi123")) {
-          let role = "Admin";
-          let tps_id = "";
-          let nama = "Ahmad Dwi Saputra";
-          
-          if(payload.username === "timses1") { role = "Timses"; nama = "Rahmat Lapangan"; }
-          if(payload.username === "saksi1") { role = "Saksi"; tps_id = "TPS-01"; nama = "Agus Saksi TPS 1"; }
-          
+        const matched = users.find(u => u.username === payload.username && u.password_hash === payload.password);
+        if (matched) {
+          if (matched.status_aktif !== "Active") {
+            return { status: "error", message: "Akses Ditolak: Akun Anda dinonaktifkan!" };
+          }
           return {
-            success: true,
-            user: { user_id: payload.username, username: payload.username, nama_lengkap: nama, role: role, tps_id: tps_id }
+            status: "success",
+            token: "SIM-TOKEN-" + Math.floor(Math.random() * 10000000),
+            user: { user_id: matched.user_id, nama_lengkap: matched.nama_lengkap, role: matched.role }
           };
         }
-        return { success: false, message: "Kredensial salah! Gunakan: admin/admin123, timses1/timses123, saksi1/saksi123" };
+        return { status: "error", message: "Username atau password salah!" };
 
       case "getAppSettings":
-        return { success: true, data: settings };
+        return { status: "success", data: settings };
 
       case "updateAppSettings":
-        localStorage.setItem("sim_app_settings", JSON.stringify({ nama_calon_kades: payload.nama_calon_kades }));
-        return { success: true, message: "Konfigurasi lokal berhasil disimpan!" };
+        settings.nama_calon_kades = payload.nama_calon_kades;
+        localStorage.setItem("sim_app_settings", JSON.stringify(settings));
+        return { status: "success", message: "Konfigurasi lokal berhasil disimpan!" };
 
-      case "voterValidation":
-        const foundDpt = dpt.find(d => d.nik === payload.nik.toString());
-        if (!foundDpt) return { success: false, message: "Data warga tidak terdaftar dalam DPT!" };
+      case "registerTimses":
+        const duplicate = users.find(u => u.username === payload.username);
+        if (duplicate) return { status: "error", message: "Username sudah terdaftar!" };
+        users.push({
+          user_id: "USR-0" + (users.length + 1),
+          username: payload.username,
+          password_hash: payload.password,
+          nama_lengkap: payload.nama_lengkap,
+          role: "TIMSES",
+          status_aktif: "Active"
+        });
+        localStorage.setItem("sim_users", JSON.stringify(users));
+        return { status: "success", message: "Petugas lapangan baru berhasil didaftarkan!" };
+
+      case "submitVoter":
+        const dptMatch = dpt.find(d => d.nik === payload.nik.toString());
+        if (!dptMatch) return { status: "error", message: "Data warga tidak terdaftar dalam DPT!" };
         
-        const duplicate = voters.find(v => v.nik === payload.nik.toString());
-        if (duplicate) return { success: false, message: "NIK ini sudah didata sebelumnya oleh Timses!" };
-        
-        voters.push({ voter_id: "VTR-" + Date.now(), nik: payload.nik.toString(), klasifikasi: payload.klasifikasi, input_by: payload.user_id, created_at: new Date().toISOString() });
+        const voterDuplicate = voters.find(v => v.nik === payload.nik.toString());
+        if (voterDuplicate) return { status: "error", message: "NIK ini sudah didata sebelumnya oleh Timses!" };
+
+        voters.push({
+          voter_id: "VTR-" + Math.floor(Math.random() * 1000),
+          nik: payload.nik.toString(),
+          klasifikasi: payload.klasifikasi,
+          input_by_user_id: this.session.user.user_id,
+          created_at: new Date().toISOString()
+        });
         localStorage.setItem("sim_warga_voters", JSON.stringify(voters));
-        return { success: true, message: "Data Pemilih berhasil diverifikasi dan disimpan!" };
+        return { status: "success", message: `Data pemilih "${dptMatch.nama_warga}" berhasil diamankan!` };
 
-      case "submitRealCount":
-        const tps = realCount.find(r => r.tps_id === payload.tps_id);
-        if (!tps) return { success: false, message: "ID TPS tidak sinkron!" };
-        if (tps.status_lock_suara === "Yes") return { success: false, message: "Data Real Count TPS Anda telah dikunci Pusat!" };
+      case "getAdminDashboard":
+        const proCount = voters.filter(v => v.klasifikasi === "PRO").length;
+        const kontraCount = voters.filter(v => v.klasifikasi === "KONTRA").length;
+        const raguCount = voters.filter(v => v.klasifikasi === "RAGU-RAGU").length;
+        
+        // Formating lists for data tables
+        const votersList = voters.map(v => {
+          const d = dpt.find(item => item.nik === v.nik) || {};
+          const u = users.find(user => user.user_id === v.input_by_user_id) || {};
+          return {
+            voter_id: v.voter_id,
+            nik: v.nik,
+            nama: d.nama_warga || "Tidak Terdaftar",
+            dusun: d.dusun || "-",
+            rt_rw: `RT ${d.rt || '-'} / RW ${d.rw || '-'}`,
+            klasifikasi: v.klasifikasi,
+            input_by: u.nama_lengkap || "Sistem",
+            created_at: v.created_at
+          };
+        });
 
-        tps.suara_calon_kita = payload.suara_calon_kita;
-        tps.suara_lawan_1 = payload.suara_lawan_1;
-        tps.suara_lawan_2 = payload.suara_lawan_2;
-        tps.suara_tidak_sah = payload.suara_tidak_sah;
-        tps.status_lock_suara = "Yes"; // auto-lock on submit for preview feel
-        localStorage.setItem("sim_tps_real_count", JSON.stringify(realCount));
-        return { success: true, message: "Data Real Count TPS berhasil dikunci dan dikirim!" };
+        // Spatial zoning maps
+        const zoneMap = {};
+        dpt.forEach(item => {
+          const key = `${item.dusun} - RT ${item.rt} / RW ${item.rw}`;
+          if (!zoneMap[key]) {
+            zoneMap[key] = { zone: key, dpt: 0, pro: 0, kontra: 0, ragu: 0 };
+          }
+          zoneMap[key].dpt++;
+        });
 
-      case "getDashboardData":
-        // convert to matching GAS array format for backward compatibility
-        const formattedRC = realCount.map(r => [r.tps_id, r.nama_tps, r.total_dpt_tps, r.suara_calon_kita, r.suara_lawan_1, r.suara_lawan_2, r.suara_tidak_sah, r.saksi_user_id, r.status_lock_suara]);
-        const formattedVoters = voters.map(v => [v.voter_id, v.nik, v.klasifikasi, v.input_by, v.created_at]);
+        voters.forEach(v => {
+          const d = dpt.find(item => item.nik === v.nik);
+          if (d) {
+            const key = `${d.dusun} - RT ${d.rt} / RW ${d.rw}`;
+            if (zoneMap[key]) {
+              if (v.klasifikasi === "PRO") zoneMap[key].pro++;
+              if (v.klasifikasi === "KONTRA") zoneMap[key].kontra++;
+              if (v.klasifikasi === "RAGU-RAGU") zoneMap[key].ragu++;
+            }
+          }
+        });
+
         return {
-          success: true,
-          votersCount: voters.length,
-          dptCount: dpt.length,
-          realCountData: formattedRC,
-          votersList: formattedVoters
+          status: "success",
+          branding: settings,
+          metrics: {
+            total_dpt: dpt.length,
+            total_terdata: voters.length,
+            pro: proCount,
+            kontra: kontraCount,
+            ragu: raguCount,
+            pro_percentage: dpt.length > 0 ? ((proCount / dpt.length) * 100).toFixed(1) : "0.0"
+          },
+          voters: votersList,
+          zoning: Object.keys(zoneMap).map(k => zoneMap[k])
         };
     }
   },
 
-  // STREAMING_CHUNK: Managing routing and views loading transitions...
+  // Sistem router pemindah halaman dinamis (Single Page Application)
   router: {
     views: {
       login: "login.html",
-      Admin: "dashboard-admin.html",
-      Timses: "dashboard-timses.html",
-      Saksi: "dashboard-timses.html"
+      ADMIN: "dashboard_admin.html",
+      TIMSES: "dashboard_timses.html"
     },
 
     loadView: async function(role) {
-      const container = document.getElementById("app-shell");
+      const container = document.getElementById("app-root");
       container.innerHTML = `
-        <div class="flex-1 flex flex-col items-center justify-center bg-navy-dark text-white p-8">
-          <div class="animate-spin rounded-full h-10 w-10 border-4 border-t-transparent border-amber-400 mb-3"></div>
-          <p class="text-xs text-gold tracking-widest font-bold uppercase">Memuat Template UI...</p>
+        <div class="flex-1 flex flex-col items-center justify-center bg-[#0B192C] text-white min-h-screen">
+          <div class="animate-spin rounded-full h-12 w-12 border-4 border-t-transparent border-[#D4AF37] mb-4"></div>
+          <p class="text-xs text-[#D4AF37] tracking-widest font-bold uppercase animate-pulse">Memuat Antarmuka Trisula...</p>
         </div>`;
-      
+
       try {
         const viewFile = this.views[role] || this.views.login;
         const res = await fetch(viewFile);
-        if (!res.ok) throw new Error("Template HTML tidak ditemukan");
+        if (!res.ok) throw new Error("Template HTML tidak ditemukan.");
         
         container.innerHTML = await res.text();
-        
-        // Execute Hooks
-        if (role === "Admin") appEngine.admin.initDashboard();
-        if (role === "Timses" || role === "Saksi") appEngine.field.initFieldView(role);
+
+        // Lifecycle trigger setelah visual berhasil diinjeksi
+        if (role === "ADMIN") appEngine.admin.initDashboard();
+        if (role === "TIMSES") appEngine.field.initFieldView();
       } catch (err) {
+        console.error("Router error:", err);
         container.innerHTML = `
-          <div class="p-8 text-center text-red-600 font-bold bg-white min-h-screen flex flex-col items-center justify-center">
-            <i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i>
-            <p class="text-sm uppercase tracking-wide">Gagal Memuat Arsitektur UI</p>
-            <p class="text-xs text-slate-400 mt-1">Pastikan file template HTML berada pada root repositori GitHub Anda.</p>
+          <div class="p-8 text-center text-red-500 font-bold bg-white min-h-screen flex flex-col items-center justify-center">
+            <i class="fa-solid fa-triangle-exclamation text-4xl mb-3 text-gold"></i>
+            <p class="text-sm uppercase tracking-wide">CORS / Template Loading Error</p>
+            <p class="text-xs text-slate-400 font-normal mt-2 max-w-sm leading-relaxed">
+              Pastikan Anda membuka file index.html menggunakan Local Web Server (seperti Live Server VS Code) atau jalankan langsung lewat GitHub Pages!
+            </p>
           </div>`;
       }
     },
@@ -189,127 +244,143 @@ const appEngine = {
     switchTab: function(tabId) {
       document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
       document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("text-gold", "bg-slate-800/60"));
-      
+
       const activeTab = document.getElementById(`tab-${tabId}`);
-      if(activeTab) activeTab.classList.remove("hidden");
-      
-      if(event && event.currentTarget) {
+      if (activeTab) activeTab.classList.remove("hidden");
+
+      if (event && event.currentTarget) {
         event.currentTarget.classList.add("text-gold", "bg-slate-800/60");
       }
     }
   },
 
-  // STREAMING_CHUNK: Admin Dashboard control systems...
+  // Subsistem Otentikasi Pengguna
+  auth: {
+    submit: async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btn-login-submit");
+      const alertBox = document.getElementById("login-alert");
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-rotate animate-spin mr-2"></i> MEMVERIFIKASI...`;
+
+      const username = document.getElementById("login-username").value;
+      const password = document.getElementById("login-password").value;
+
+      const res = await appEngine.request("login", { username, password });
+
+      if (res.status === "success") {
+        localStorage.setItem("pvs_session_v70", JSON.stringify({ token: res.token, user: res.user }));
+        appEngine.session.user = res.user;
+        appEngine.router.loadView(res.user.role);
+      } else {
+        alertBox.className = "mb-6 p-4 rounded-2xl text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/30 shadow-md";
+        alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-2"></i> ${res.message}`;
+        alertBox.classList.remove("hidden");
+        btn.disabled = false;
+        btn.innerHTML = `<span>MASUK RUANG OPERASIONAL</span> <i class="fa-solid fa-right-to-bracket text-xs"></i>`;
+      }
+    },
+
+    checkSession: function() {
+      const stored = localStorage.getItem("pvs_session_v70");
+      if (stored) {
+        const sessionData = JSON.parse(stored);
+        appEngine.session.user = sessionData.user;
+        appEngine.router.loadView(sessionData.user.role);
+      } else {
+        appEngine.router.loadView("login");
+      }
+    },
+
+    logout: function() {
+      localStorage.removeItem("pvs_session_v70");
+      appEngine.session.user = null;
+      appEngine.router.loadView("login");
+    }
+  },
+
+  // Subsistem Ruang Kontrol Admin (Desktop)
   admin: {
+    activeSubTab: "subtab-dpt",
+
     initDashboard: async function() {
-      // Dynamic fallback badge updates
-      const badge = document.getElementById("system-mode-badge");
-      if (badge) {
+      const modeBadge = document.getElementById("system-mode-badge");
+      if (modeBadge) {
         if (appEngine.isSimulation) {
-          badge.innerText = "SIMULATION LOCAL DB";
-          badge.className = "px-2.5 py-1 bg-amber-100 text-amber-800 text-[9px] font-black uppercase rounded-md tracking-wider border border-amber-200 shadow-sm";
+          modeBadge.innerText = "MODE SIMULASI (OFFLINE)";
+          modeBadge.className = "px-2.5 py-1 bg-amber-500/10 text-amber-400 text-[9px] font-black uppercase rounded-md tracking-wider border border-amber-500/30";
         } else {
-          badge.innerText = "LIVE CLOUD API";
-          badge.className = "px-2.5 py-1 bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase rounded-md tracking-wider border border-emerald-200 shadow-sm";
+          modeBadge.innerText = "LIVE SYNC ACTIVE";
+          modeBadge.className = "px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-[9px] font-black uppercase rounded-md tracking-wider border border-emerald-500/30";
         }
       }
 
       const profileName = document.getElementById("admin-profile-name");
-      if(profileName && appEngine.session.user) profileName.innerText = appEngine.session.user.nama_lengkap;
-      
-      const settingsRes = await appEngine.request("getAppSettings");
-      if(settingsRes.success && settingsRes.data) {
-        appEngine.session.settings = settingsRes.data;
-        const inputCandidate = document.getElementById("setting-candidate-name");
-        if(inputCandidate) inputCandidate.value = settingsRes.data.nama_calon_kades;
-        const bannerTitle = document.getElementById("hero-candidate-banner");
-        if (bannerTitle && settingsRes.data.nama_calon_kades) {
-          bannerTitle.innerText = `BERSAMA MEMBANGUN DESA DENGAN ${settingsRes.data.nama_calon_kades.toUpperCase()}`;
-        }
+      if (profileName && appEngine.session.user) {
+        profileName.innerText = appEngine.session.user.nama_lengkap;
       }
 
-      const res = await appEngine.request("getDashboardData");
-      if(res.success) {
+      // Ambil seluruh data analitik dari server/fallback simulator
+      const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
+      if (res.status === "success") {
         appEngine.session.dbCache = res;
-        this.renderStatsAndTables(res);
+        
+        // Update Brand Kades
+        const candidateBanner = document.getElementById("hero-candidate-banner");
+        if (candidateBanner && res.branding) {
+          candidateBanner.innerText = `BERSAMA ${res.branding.nama_calon_kades.toUpperCase()} KITA SUKSESKAN PILKADES DAMAI`;
+        }
+
+        this.renderMetrics(res.metrics);
+        this.renderTPSRecapTable(res.zoning);
+        this.renderZoningChart(res.metrics);
+        this.renderAnalyticsTable();
       }
     },
 
     syncData: async function() {
-      const btn = document.querySelector("header button");
-      if(btn) btn.innerHTML = `<i class="fa-solid fa-rotate animate-spin text-xs"></i> MEMUAT...`;
       await this.initDashboard();
-      if(btn) btn.innerHTML = `<i class="fa-solid fa-rotate text-xs"></i> SINKRON`;
     },
 
-    renderStatsAndTables: function(data) {
-      document.getElementById("stat-total-dpt").innerText = data.dptCount;
-      document.getElementById("stat-total-voters").innerText = data.votersCount;
-      
-      const lockedTps = data.realCountData.filter(r => r[8].toString() === "Yes").length;
-      const progress = data.realCountData.length > 0 ? Math.round((lockedTps / data.realCountData.length) * 100) : 0;
-      document.getElementById("stat-realcount-progress").innerText = progress + "%";
-      
-      const tbodyTps = document.querySelector("#table-rekap-tps tbody");
-      if(tbodyTps) {
-        tbodyTps.innerHTML = "";
-        let totalKita = 0, totalL1 = 0, totalL2 = 0;
-        
-        data.realCountData.forEach(row => {
-          totalKita += Number(row[3] || 0);
-          totalL1 += Number(row[4] || 0);
-          totalL2 += Number(row[5] || 0);
-          
-          tbodyTps.innerHTML += `
-            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-              <td class="p-3 font-bold text-slate-800">${row[1]}</td>
-              <td class="p-3 text-center text-emerald-600 font-black">${row[3] || 0}</td>
-              <td class="p-3 text-center text-slate-700">${row[4] || 0}</td>
-              <td class="p-3 text-center text-slate-700">${row[5] || 0}</td>
-              <td class="p-3 text-center">
-                <span class="px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border ${row[8].toString() === 'Yes' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}">
-                  ${row[8].toString() === 'Yes' ? 'KUNCI':'OPEN'}
-                </span>
-              </td>
-            </tr>`;
-        });
-        
-        this.initChart(totalKita, totalL1, totalL2);
-      }
-      
-      const tbodyVoters = document.querySelector("#table-voters-list tbody");
-      if(tbodyVoters) {
-        tbodyVoters.innerHTML = "";
-        data.votersList.forEach(row => {
-          let badgeColor = "bg-blue-50 text-blue-800 border-blue-200";
-          if(row[2] === "Pro") badgeColor = "bg-emerald-50 text-emerald-800 border-emerald-200";
-          if(row[2] === "Kontra") badgeColor = "bg-red-50 text-red-800 border-red-200";
-          
-          tbodyVoters.innerHTML += `
-            <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
-              <td class="p-3 font-mono font-bold text-slate-700 tracking-wider">${row[1]}</td>
-              <td class="p-3"><span class="px-2.5 py-0.5 rounded-full text-[9px] font-black border ${badgeColor}">${row[2]}</span></td>
-              <td class="p-3 text-slate-500 font-medium">${row[3]}</td>
-              <td class="p-3 text-slate-400 font-medium">${new Date(row[4]).toLocaleDateString('id-ID')}</td>
-            </tr>`;
-        });
-      }
+    renderMetrics: function(metrics) {
+      document.getElementById("stat-total-dpt").innerText = metrics.total_dpt;
+      document.getElementById("stat-total-voters").innerText = metrics.total_terdata;
+      document.getElementById("stat-realcount-progress").innerText = metrics.pro_percentage + "%";
     },
 
-    initChart: function(kita, l1, l2) {
-      const canvas = document.getElementById('chart-real-count-admin');
-      if(!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if(window.myPVSChart) window.myPVSChart.destroy();
-      
+    renderTPSRecapTable: function(zoning) {
+      const tbody = document.querySelector("#table-rekap-tps tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      zoning.forEach(zone => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-bold text-slate-800">${zone.zone}</td>
+            <td class="p-3 text-center">${zone.dpt}</td>
+            <td class="p-3 text-center text-emerald-600 font-black">${zone.pro}</td>
+            <td class="p-3 text-center text-red-500 font-semibold">${zone.kontra}</td>
+            <td class="p-3 text-center text-amber-500 font-semibold">${zone.ragu}</td>
+          </tr>`;
+      });
+    },
+
+    renderZoningChart: function(metrics) {
+      const canvas = document.getElementById("chart-real-count-admin");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+
+      if (window.myPVSChart) window.myPVSChart.destroy();
+
       window.myPVSChart = new Chart(ctx, {
-        type: 'doughnut',
+        type: "doughnut",
         data: {
-          labels: ['Calon Kita', 'Lawan 1', 'Lawan 2'],
+          labels: ["PRO (Dukukangan)", "KONTRA (Oposisi)", "RAGU-RAGU"],
           datasets: [{
-            data: [kita, l1, l2],
-            backgroundColor: ['#0B192C', '#EF4444', '#F59E0B'],
-            borderColor: '#FFFFFF',
+            data: [metrics.pro, metrics.kontra, metrics.ragu],
+            backgroundColor: ["#0B192C", "#EF4444", "#F59E0B"],
+            borderColor: "#FFFFFF",
             borderWidth: 3
           }]
         },
@@ -318,12 +389,199 @@ const appEngine = {
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom',
-              labels: { boxWidth: 10, padding: 15, font: { size: 10, weight: 'bold' } }
+              position: "bottom",
+              labels: { boxWidth: 10, padding: 15, font: { size: 10, weight: "bold" } }
             }
           }
         }
       });
+    },
+
+    // Sistem Sub-Tabs Data Pemilih Lapangan
+    switchSubTab: function(subTabId) {
+      this.activeSubTab = subTabId;
+      document.querySelectorAll(".sub-tab-btn").forEach(btn => {
+        btn.className = "sub-tab-btn px-4 py-2 bg-white text-slate-500 hover:text-navy-dark text-xs font-bold rounded-xl border border-slate-100 transition";
+      });
+      const activeBtn = document.getElementById(`subtab-btn-${subTabId.replace('subtab-', '')}`);
+      if (activeBtn) {
+        activeBtn.className = "sub-tab-btn px-4 py-2 bg-navy-dark text-gold text-xs font-extrabold rounded-xl transition shadow-sm";
+      }
+      this.renderAnalyticsTable();
+    },
+
+    renderAnalyticsTable: function() {
+      const data = appEngine.session.dbCache;
+      if (!data) return;
+
+      const head = document.getElementById("table-analytics-head");
+      const body = document.getElementById("table-analytics-body");
+      if (!head || !body) return;
+
+      head.innerHTML = "";
+      body.innerHTML = "";
+
+      switch(this.activeSubTab) {
+        case "subtab-dpt":
+          // TAB 1: TOTAL DATA DPT
+          head.innerHTML = `
+            <tr>
+              <th class="p-3">Nama Warga</th>
+              <th class="p-3">NIK</th>
+              <th class="p-3">Dusun</th>
+              <th class="p-3 text-center">RT/RW</th>
+              <th class="p-3 text-center">Orientasi</th>
+            </tr>`;
+          
+          if (appEngine.isSimulation) {
+            const dptList = JSON.parse(localStorage.getItem("sim_data_dpt"));
+            const voters = JSON.parse(localStorage.getItem("sim_warga_voters"));
+            
+            dptList.forEach(item => {
+              const match = voters.find(v => v.nik === item.nik);
+              const badge = match 
+                ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-emerald-50 text-emerald-800 border-emerald-200">${match.klasifikasi}</span>`
+                : `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-slate-50 text-slate-400 border-slate-200">Belum Didata</span>`;
+              
+              body.innerHTML += `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                  <td class="p-3 font-bold text-slate-800">${item.nama_warga}</td>
+                  <td class="p-3 font-mono text-slate-600">${item.nik}</td>
+                  <td class="p-3">${item.dusun}</td>
+                  <td class="p-3 text-center">RT ${item.rt} / RW ${item.rw}</td>
+                  <td class="p-3 text-center">${badge}</td>
+                </tr>`;
+            });
+          }
+          break;
+
+        case "subtab-rt-rw":
+          // TAB 2: REKAP WARGA PER RT/RW
+          head.innerHTML = `
+            <tr>
+              <th class="p-3">Lokasi RT/RW</th>
+              <th class="p-3 text-center">Target DPT</th>
+              <th class="p-3 text-center text-emerald-600">PRO</th>
+              <th class="p-3 text-center text-red-500">KONTRA</th>
+              <th class="p-3 text-center text-amber-500">RAGU-RAGU</th>
+            </tr>`;
+
+          data.zoning.forEach(zone => {
+            body.innerHTML += `
+              <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                <td class="p-3 font-bold text-slate-800">${zone.zone}</td>
+                <td class="p-3 text-center font-bold">${zone.dpt}</td>
+                <td class="p-3 text-center text-emerald-600 font-extrabold">${zone.pro}</td>
+                <td class="p-3 text-center text-red-500 font-extrabold">${zone.kontra}</td>
+                <td class="p-3 text-center text-amber-500 font-extrabold">${zone.ragu}</td>
+              </tr>`;
+          });
+          break;
+
+        case "subtab-kk":
+          // TAB 3: REKAP WARGA PER KK
+          head.innerHTML = `
+            <tr>
+              <th class="p-3">Nomor Kartu Keluarga (KK)</th>
+              <th class="p-3">Dusun / RT / RW</th>
+              <th class="p-3">Nama Kepala / Anggota</th>
+              <th class="p-3 text-center">Status Pemetaan KK</th>
+            </tr>`;
+
+          if (appEngine.isSimulation) {
+            const dptList = JSON.parse(localStorage.getItem("sim_data_dpt"));
+            const voters = JSON.parse(localStorage.getItem("sim_warga_voters"));
+            
+            // Map members to Family Card (KK)
+            const kkMap = {};
+            dptList.forEach(item => {
+              if (!kkMap[item.no_kk]) {
+                kkMap[item.no_kk] = { dusun: item.dusun, rt: item.rt, rw: item.rw, members: [], proCount: 0 };
+              }
+              const match = voters.find(v => v.nik === item.nik);
+              kkMap[item.no_kk].members.push(item.nama_warga + (match ? ` (${match.klasifikasi})` : ''));
+              if (match && match.klasifikasi === "PRO") kkMap[item.no_kk].proCount++;
+            });
+
+            for (let kk in kkMap) {
+              const statusBadge = kkMap[kk].proCount > 0 
+                ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-emerald-50 text-emerald-800 border-emerald-200">Aman (${kkMap[kk].proCount} Pro)</span>`
+                : `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-red-50 text-red-800 border-red-200">Rentan</span>`;
+
+              body.innerHTML += `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                  <td class="p-3 font-mono font-bold text-slate-800">${kk}</td>
+                  <td class="p-3">${kkMap[kk].dusun} (RT ${kkMap[kk].rt}/RW ${kkMap[kk].rw})</td>
+                  <td class="p-3 text-slate-500 font-medium">${kkMap[kk].members.join(", ")}</td>
+                  <td class="p-3 text-center">${statusBadge}</td>
+                </tr>`;
+            }
+          }
+          break;
+
+        case "subtab-timses":
+          // TAB 4: REKAP DATA HASIL TIMSES
+          head.innerHTML = `
+            <tr>
+              <th class="p-3">Petugas Penginput (Timses)</th>
+              <th class="p-3 text-center">Jumlah Warga Didata</th>
+              <th class="p-3 text-center">Kontribusi Lapangan</th>
+            </tr>`;
+
+          const timsesStats = {};
+          data.voters.forEach(v => {
+            if (!timsesStats[v.input_by]) timsesStats[v.input_by] = 0;
+            timsesStats[v.input_by]++;
+          });
+
+          const totalDataVoters = data.voters.length || 1;
+          for (let name in timsesStats) {
+            const percent = ((timsesStats[name] / totalDataVoters) * 100).toFixed(1);
+            body.innerHTML += `
+              <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                <td class="p-3 font-bold text-slate-800">${name}</td>
+                <td class="p-3 text-center font-extrabold text-blue-950">${timsesStats[name]} Warga</td>
+                <td class="p-3 text-center font-bold text-slate-700">${percent}%</td>
+              </tr>`;
+          }
+          break;
+
+        case "subtab-unvisited":
+          // TAB 5: REKAP WARGA BELUM DIKUNJUNGI (RAGU-RAGU / BLANK)
+          head.innerHTML = `
+            <tr>
+              <th class="p-3">Nama Warga</th>
+              <th class="p-3">NIK</th>
+              <th class="p-3">Dusun / RT / RW</th>
+              <th class="p-3">Keterangan Status</th>
+            </tr>`;
+
+          if (appEngine.isSimulation) {
+            const dptList = JSON.parse(localStorage.getItem("sim_data_dpt"));
+            const voters = JSON.parse(localStorage.getItem("sim_warga_voters"));
+
+            dptList.forEach(item => {
+              const match = voters.find(v => v.nik === item.nik);
+              const isRagu = match && match.klasifikasi === "RAGU-RAGU";
+              const isUnvisited = !match;
+
+              if (isRagu || isUnvisited) {
+                const label = isRagu 
+                  ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-amber-50 text-amber-800 border-amber-200">Konstituen Ragu-Ragu</span>`
+                  : `<span class="px-2 py-0.5 rounded-full text-[9px] font-black border bg-red-50 text-red-800 border-red-200">Belum Dikunjungi</span>`;
+
+                body.innerHTML += `
+                  <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3 font-bold text-slate-800">${item.nama_warga}</td>
+                    <td class="p-3 font-mono text-slate-500">${item.nik}</td>
+                    <td class="p-3">${item.dusun} / RT ${item.rt} / RW ${item.rw}</td>
+                    <td class="p-3">${label}</td>
+                  </tr>`;
+              }
+            });
+          }
+          break;
+      }
     },
 
     saveSettings: async function(e) {
@@ -333,143 +591,76 @@ const appEngine = {
       };
       const res = await appEngine.request("updateAppSettings", payload);
       alert(res.message);
-      if(res.success) this.initDashboard();
-    }
-  },
+      if (res.status === "success") this.initDashboard();
+    },
 
-  // STREAMING_CHUNK: Authentication systems...
-  auth: {
-    submit: async function(e) {
+    submitRegister: async function(e) {
       e.preventDefault();
-      const btn = document.getElementById("btn-login-submit");
-      const alertBox = document.getElementById("login-alert");
-      
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Memverifikasi...`;
-      
+      const alertBox = document.getElementById("register-alert");
       const payload = {
-        username: document.getElementById("login-username").value,
-        password: document.getElementById("login-password").value
+        nama_lengkap: document.getElementById("reg-name").value,
+        username: document.getElementById("reg-username").value,
+        password: document.getElementById("reg-password").value
       };
-      
-      const res = await appEngine.request("login", payload);
-      
-      if(res.success) {
-        localStorage.setItem("pvs_session_v56", JSON.stringify(res.user));
-        appEngine.session.user = res.user;
-        appEngine.router.loadView(res.user.role);
-      } else {
-        alertBox.className = "mb-5 p-4 rounded-2xl text-xs font-bold bg-red-50 text-red-700 border border-red-200 shadow-sm";
-        alertBox.innerText = res.message;
-        alertBox.classList.remove("hidden");
-        btn.disabled = false;
-        btn.innerHTML = `<span>MASUK KE SISTEM</span><i class="fa-solid fa-right-to-bracket text-xs"></i>`;
-      }
-    },
 
-    checkSession: function() {
-      const stored = localStorage.getItem("pvs_session_v56");
-      if (stored) {
-        appEngine.session.user = JSON.parse(stored);
-        appEngine.router.loadView(appEngine.session.user.role);
-      } else {
-        appEngine.router.loadView("login");
-      }
-    },
+      const res = await appEngine.request("registerTimses", payload);
+      
+      alertBox.className = `p-3 rounded-xl text-xs font-bold mb-4 ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
+      alertBox.innerText = res.message;
+      alertBox.classList.remove("hidden");
 
-    logout: function() {
-      localStorage.removeItem("pvs_session_v56");
-      appEngine.session.user = null;
-      appEngine.router.loadView("login");
+      if (res.status === "success") {
+        document.getElementById("form-register-timses").reset();
+      }
     }
   },
 
-  // STREAMING_CHUNK: Field operations systems...
+  // Subsistem Operasional Lapangan (Mobile View Timses)
   field: {
-    initFieldView: function(role) {
-      document.getElementById("timses-profile-name").innerText = appEngine.session.user.nama_lengkap + ` [${role}]`;
-      
-      if(role === "Saksi") {
-        document.getElementById("pane-timses-voter").classList.add("hidden");
-        document.getElementById("pane-saksi-realcount").classList.remove("hidden");
-        this.checkTpsLockStatus();
-      }
-    },
-
-    checkTpsLockStatus: async function() {
-      const res = await appEngine.request("getDashboardData");
-      if(res.success) {
-        const tpsId = appEngine.session.user.tps_id;
-        const myTps = res.realCountData.find(row => row[0].toString() === tpsId.toString());
-        
-        if(myTps && myTps[8].toString() === "Yes") {
-          const btn = document.getElementById("btn-rc-submit");
-          if(btn) {
-            btn.disabled = true;
-            btn.className = "w-full mt-3 py-4 bg-slate-200 text-slate-400 font-extrabold text-xs tracking-widest rounded-2xl cursor-not-allowed flex items-center justify-center gap-2 border border-slate-300";
-            btn.innerHTML = `<i class="fa-solid fa-lock text-sm"></i> DATA DIKUNCI OLEH PUSAT`;
-          }
-          document.querySelectorAll("#form-realcount-submission input").forEach(input => input.disabled = true);
-          this.showToast("field-alert", "Data Berita Acara TPS Anda telah dikunci rapat di cloud server.", "error");
-        }
+    initFieldView: function() {
+      const profileName = document.getElementById("timses-profile-name");
+      if (profileName && appEngine.session.user) {
+        profileName.innerText = appEngine.session.user.nama_lengkap;
       }
     },
 
     submitVoter: async function(e) {
       e.preventDefault();
+      const alertBox = document.getElementById("field-alert");
       const nik = document.getElementById("field-voter-nik").value;
-      const cls = document.getElementById("field-voter-class").value;
-      
-      const res = await appEngine.request("voterValidation", {
-        nik: nik,
-        klasifikasi: cls,
-        user_id: appEngine.session.user.user_id
-      });
-      
-      this.showToast("field-alert", res.message, res.success ? "success" : "error");
-      if(res.success) document.getElementById("form-voter-submission").reset();
-    },
+      const klasifikasi = document.getElementById("field-voter-class").value;
 
-    submitRealCount: async function(e) {
-      e.preventDefault();
-      const payload = {
-        tps_id: appEngine.session.user.tps_id,
-        suara_calon_kita: document.getElementById("rc-suara-kita").value,
-        suara_lawan_1: document.getElementById("rc-suara-lawan1").value,
-        suara_lawan_2: document.getElementById("rc-suara-lawan2").value,
-        suara_tidak_sah: document.getElementById("rc-suara-rusak").value,
-        user_id: appEngine.session.user.user_id
-      };
-      
-      const res = await appEngine.request("submitRealCount", payload);
-      this.showToast("field-alert", res.message, res.success ? "success" : "error");
-      if(res.success) this.checkTpsLockStatus();
-    },
+      const res = await appEngine.request("submitVoter", { nik, klasifikasi });
 
-    showToast: function(boxId, message, status) {
-      const box = document.getElementById(boxId);
-      if(!box) return;
-      box.innerText = message;
-      box.className = `p-4 rounded-2xl text-xs font-bold tracking-wide shadow-sm ${status === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200'}`;
-      box.classList.remove("hidden");
+      alertBox.className = `p-4 rounded-2xl text-xs font-extrabold mb-4 shadow-sm ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
+      alertBox.innerHTML = res.status === 'success' 
+        ? `<i class="fa-solid fa-circle-check mr-2"></i> ${res.message}`
+        : `<i class="fa-solid fa-triangle-exclamation mr-2"></i> ${res.message}`;
+      alertBox.classList.remove("hidden");
+
+      if (res.status === "success") {
+        document.getElementById("form-voter-submission").reset();
+      }
     }
   },
 
-  // Utilities systems...
+  // Utility ekspor data dan cetak lembar fisik
   utils: {
     exportTableCSV: function(tableId) {
       const table = document.getElementById(tableId);
-      if(!table) return;
+      if (!table) return;
       let csv = [];
       for (let i = 0; i < table.rows.length; i++) {
         let row = [], cols = table.rows[i].cells;
-        for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText.trim().replace(/"/g, '""') + '"');
+        for (let j = 0; j < cols.length; j++) {
+          row.push('"' + cols[j].innerText.trim().replace(/"/g, '""') + '"');
+        }
         csv.push(row.join(","));
       }
       const csvBlob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(csvBlob);
-      link.setAttribute("download", `PVS_Export_${tableId}_${Date.now()}.csv`);
+      link.setAttribute("download", `PVS_DATA_${tableId}_${Date.now()}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -481,4 +672,5 @@ const appEngine = {
   }
 };
 
+// Menjalankan inisialisasi bootloader saat DOM siap
 window.addEventListener("DOMContentLoaded", () => appEngine.init());
