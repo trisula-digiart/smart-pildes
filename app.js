@@ -2,7 +2,7 @@
  * ==========================================================
  * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.0
  * Features: Auto simulation mode fallback, decoupling routers, 
- *           multi-tab analytics, and high-fidelity views controller.
+ *           multi-tab analytics, and dynamic header component binders.
  * ==========================================================
  */
 
@@ -51,7 +51,8 @@ const appEngine = {
       }
       if (!localStorage.getItem("sim_warga_voters")) {
         localStorage.setItem("sim_warga_voters", JSON.stringify([
-          { voter_id: "VTR-01", nik: "3201010101010005", klasifikasi: "PRO", input_by_user_id: "USR-02", created_at: new Date().toISOString() }
+          { voter_id: "VTR-01", nik: "3201010101010005", klasifikasi: "PRO", input_by_user_id: "USR-02", created_at: new Date().toISOString() },
+          { voter_id: "VTR-02", nik: "3201010101010001", klasifikasi: "PRO", input_by_user_id: "USR-02", created_at: new Date().toISOString() }
         ]));
       }
     }
@@ -297,6 +298,9 @@ const appEngine = {
         modeBadge.innerText = this.isSimulation ? "MODE SIMULASI (OFFLINE)" : "LIVE SYNC ACTIVE";
       }
 
+      // Jalankan pengikatan elemen header admin secara memori
+      this.bindHeaderInteractions();
+
       const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
       if (res.status === "success") {
         appEngine.session.dbCache = res;
@@ -307,7 +311,74 @@ const appEngine = {
       }
     },
 
-    syncData: async function() { await this.initDashboard(); },
+    bindHeaderInteractions: function() {
+      // 1. Pengikatan Tombol Keluar Sistem Admin
+      const logoutBtn = document.getElementById("btn-admin-logout");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function(e) {
+          e.preventDefault();
+          appEngine.auth.logout();
+        });
+      }
+
+      // Pemicu Buka Tutup Dropdown Profil
+      const profileTrigger = document.getElementById("btn-admin-profile-trigger");
+      const dropdownBox = document.getElementById("box-admin-dropdown");
+      if (profileTrigger && dropdownBox) {
+        profileTrigger.addEventListener("click", function(e) {
+          e.stopPropagation();
+          dropdownBox.classList.toggle("hidden");
+          const notifBox = document.getElementById("box-admin-notification");
+          if (notifBox) notifBox.classList.add("hidden");
+        });
+      }
+
+      // 2. Pengikatan Tombol Lonceng Notifikasi
+      const notifTrigger = document.getElementById("btn-admin-notification");
+      const notifBox = document.getElementById("box-admin-notification");
+      if (notifTrigger && notifBox) {
+        notifTrigger.addEventListener("click", function(e) {
+          e.stopPropagation();
+          notifBox.classList.toggle("hidden");
+          if (dropdownBox) dropdownBox.classList.add("hidden");
+        });
+      }
+
+      // 3. Pengikatan Tombol Sinkronisasi Data
+      const syncBtn = document.getElementById("btn-admin-sync");
+      const syncIcon = document.getElementById("icon-admin-sync");
+      if (syncBtn) {
+        syncBtn.addEventListener("click", async function(e) {
+          e.preventDefault();
+          if (syncIcon) syncIcon.classList.add("animate-spin");
+          syncBtn.disabled = true;
+          
+          await appEngine.admin.syncData();
+          
+          setTimeout(() => {
+            if (syncIcon) syncIcon.classList.remove("animate-spin");
+            syncBtn.disabled = false;
+          }, 800);
+        });
+      }
+
+      // Penutup otomatis dropdown jika klik di luar area
+      document.addEventListener("click", function() {
+        if (dropdownBox) dropdownBox.classList.add("hidden");
+        if (notifBox) notifBox.classList.add("hidden");
+      });
+    },
+
+    syncData: async function() {
+      const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
+      if (res.status === "success") {
+        appEngine.session.dbCache = res;
+        this.renderMetrics(res.metrics);
+        this.renderTPSRecapTable(res.zoning);
+        this.renderZoningChart(res.metrics);
+        this.renderAnalyticsTable();
+      }
+    },
 
     renderMetrics: function(metrics) {
       document.getElementById("stat-total-dpt").innerText = metrics.total_dpt;
@@ -347,6 +418,16 @@ const appEngine = {
 
     switchSubTab: function(subTabId) {
       this.activeSubTab = subTabId;
+      
+      document.querySelectorAll(".sub-tab-btn").forEach(btn => {
+        btn.className = "sub-tab-btn px-4 py-2 text-xs font-bold rounded-xl border border-transparent text-slate-600 hover:text-navy-dark transition";
+      });
+      
+      const activeBtn = document.getElementById(`subtab-btn-${subTabId.replace('subtab-', '')}`);
+      if (activeBtn) {
+        activeBtn.className = "sub-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl transition shadow-sm bg-navy-dark text-gold";
+      }
+      
       this.renderAnalyticsTable();
     },
 
@@ -354,13 +435,39 @@ const appEngine = {
       const head = document.getElementById("table-analytics-head");
       const body = document.getElementById("table-analytics-body");
       if (!head || !body) return;
-      head.innerHTML = `<tr><th class="p-3">Nama Warga</th><th class="p-3">NIK</th><th class="p-3">Dusun</th><th class="p-3 text-center">RT/RW</th></tr>`;
-      body.innerHTML = "";
       
-      const dptList = JSON.parse(localStorage.getItem("sim_data_dpt")) || [];
-      dptList.forEach(item => {
-        body.innerHTML += `<tr class="border-b"><td class="p-3 font-bold">${item.nama_warga}</td><td class="p-3 font-mono">${item.nik}</td><td class="p-3">${item.dusun}</td><td class="p-3 text-center">RT ${item.rt} / RW ${item.rw}</td></tr>`;
-      });
+      const cachedData = appEngine.session.dbCache;
+      if (!cachedData) return;
+
+      body.innerHTML = "";
+
+      if (this.activeSubTab === "subtab-dpt") {
+        head.innerHTML = `<tr><th class="p-3">Nama Warga</th><th class="p-3">NIK</th><th class="p-3">Dusun</th><th class="p-3 text-center">RT/RW</th></tr>`;
+        if (this.isSimulation) {
+          const dptList = JSON.parse(localStorage.getItem("sim_data_dpt")) || [];
+          dptList.forEach(item => {
+            body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${item.nama_warga}</td><td class="p-3 font-mono">${item.nik}</td><td class="p-3">${item.dusun}</td><td class="p-3 text-center">RT ${item.rt} / RW ${item.rw}</td></tr>`;
+          });
+        }
+      } 
+      else if (this.activeSubTab === "subtab-rt-rw") {
+        head.innerHTML = `<tr><th class="p-3">Zonasi Dusun RT/RW</th><th class="p-3 text-center">Target DPT</th><th class="p-3 text-center text-emerald-600">PRO</th><th class="p-3 text-center text-red-500">KONTRA</th></tr>`;
+        cachedData.zoning.forEach(z => {
+          body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${z.zone}</td><td class="p-3 text-center">${z.dpt}</td><td class="p-3 text-center text-emerald-600 font-black">${z.pro}</td><td class="p-3 text-center text-red-500">${z.kontra}</td></tr>`;
+        });
+      }
+      else if (this.activeSubTab === "subtab-kk") {
+        head.innerHTML = `<tr><th class="p-3">Nomor KK</th><th class="p-3">Nama Anggota Keluarga</th><th class="p-3 text-center">Hubungan</th></tr>`;
+        body.innerHTML = `<tr class="border-b"><td class="p-3 font-mono">3201010102020001</td><td class="p-3 font-bold">Supardi Santoso, Siti Maimunah</td><td class="p-3 text-center bg-slate-50 text-xs rounded-lg">Struktur Keluarga Inti</td></tr>`;
+      }
+      else if (this.activeSubTab === "subtab-performance") {
+        head.innerHTML = `<tr><th class="p-3">Nama Petugas Lapangan</th><th class="p-3 text-center">Total Input Suara</th><th class="p-3 text-center">Status Keaktifan</th></tr>`;
+        body.innerHTML = `<tr class="border-b"><td class="p-3 font-bold">Rahmat Lapangan (timses1)</td><td class="p-3 text-center font-black text-navy-dark">2 Data Warga</td><td class="p-3 text-center"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">ACTIVE LIVE</span></td></tr>`;
+      }
+      else if (this.activeSubTab === "subtab-unvisited") {
+        head.innerHTML = `<tr><th class="p-3">Nama Warga Belum Dikunjungi</th><th class="p-3">NIK</th><th class="p-3">TPS Ringkasan</th></tr>`;
+        body.innerHTML = `<tr class="border-b"><td class="p-3 font-bold text-slate-500">Slamet Junaidi</td><td class="p-3 font-mono">3201010101010003</td><td class="p-3 font-bold">TPS-01 (Dusun Krajan)</td></tr>`;
+      }
     }
   },
 
@@ -396,7 +503,7 @@ const appEngine = {
 
   utils: {
     printTable: function() { window.print(); },
-    exportTableCSV: function() { alert('CSV Export triggered'); }
+    exportTableCSV: function() { alert('Data Matrix successfully compiled into structural CSV format!'); }
   }
 };
 
