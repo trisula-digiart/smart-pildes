@@ -37,98 +37,96 @@
 </head>
 <body class="bg-navy-dark min-h-screen flex antialiased">
 
-  <div class="min-h-screen w-full flex flex-col md:flex-row overflow-hidden">
+  <div class="min-h-screen w-full flex flex-col md:flex-row overflow-hidden bg-navy-dark">
+  
+  <!-- LEFT PANEL: Dynamic Corporate Graphic Banner -->
+  <div class="hidden md:flex md:w-1/2 lg:w-7/12 relative items-center justify-center p-12 bg-gradient-premium overflow-hidden border-r-[5px] border-gold">
+    <!-- Background Grid Overlay -->
+    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px]"></div>
     
-    <!-- LEFT PANEL: Dynamic Visual Banner (Hides on Mobile/HP) -->
-    <div class="hidden md:flex md:w-1/2 lg:w-7/12 relative items-center justify-center p-12 bg-gradient-premium overflow-hidden border-r-[5px] border-gold">
-      <!-- Background Grid Overlay -->
-      <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px]"></div>
-      
-      <!-- Custom Luxury Floating Blur Lights -->
-      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-      
-      <!-- Banner Content -->
-      <div class="relative z-10 max-w-lg text-left space-y-6">
-        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full">
-          <i class="fa-solid fa-crown text-gold text-xs"></i>
-          <span class="text-xs font-bold text-gold tracking-widest uppercase">Decoupled Premium v7.0</span>
-        </div>
-        <h1 class="text-4xl lg:text-5xl font-black tracking-tight leading-none text-white">
-          PILKADES <br>
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold via-amber-300 to-yellow-400">VICTORY SYSTEM</span>
-        </h1>
-        <div class="w-20 h-1.5 bg-gradient-gold rounded-full"></div>
-        <p class="text-slate-300 font-light leading-relaxed text-sm lg:text-base">
-          Aplikasi taktis pemenangan Pemilihan Kepala Desa berbasis cloud. Kelola pemetaan target DPT secara akurat, zonasi pemilih rukun tetangga, hingga input cepat hasil real-count C1 plano langsung dari lapangan.
-        </p>
-        <div class="flex items-center gap-4 text-xs font-bold text-slate-400 tracking-wider">
-          <span><i class="fa-solid fa-circle-check text-gold mr-1.5"></i> TRANSPARAN</span>
-          <span><i class="fa-solid fa-circle-check text-gold mr-1.5"></i> AMAN</span>
-          <span><i class="fa-solid fa-circle-check text-gold mr-1.5"></i> REAL-TIME</span>
-        </div>
+    <!-- Floating Luxury Blur Vector Lights -->
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+    
+    <!-- Branding Context Info -->
+    <div class="relative z-10 max-w-lg text-left space-y-6">
+      <div class="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full">
+        <i class="fa-solid fa-crown text-gold text-xs"></i>
+        <span class="text-xs font-bold text-gold tracking-widest uppercase">Decoupled Premium v7.0</span>
       </div>
-    </div>
-
-    <!-- RIGHT PANEL: Clean Interactive Authentication Card -->
-    <div class="flex-1 flex items-center justify-center p-6 sm:p-12 bg-gradient-premium md:bg-none md:bg-[#0B192C]">
-      <div class="w-full max-w-md bg-[#112540]/60 md:bg-[#1E3E62]/40 backdrop-blur-md p-8 sm:p-10 rounded-[2rem] border border-white/10 shadow-2xl relative">
-        <!-- Glow Effect behind card -->
-        <div class="absolute -top-12 -left-12 w-48 h-48 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none"></div>
-        
-        <!-- App Header Brand Info -->
-        <div class="flex items-center justify-between mb-8">
-          <div>
-            <h2 class="text-2xl font-black text-white tracking-tight">Masuk Sistem</h2>
-            <p class="text-xs text-slate-400 mt-1">Gunakan akun resmi dari tim pemenangan.</p>
-          </div>
-          <div class="w-12 h-12 rounded-2xl bg-gradient-gold flex items-center justify-center text-navy-dark font-black text-xl shadow-lg border border-white/10">
-            <i class="fa-solid fa-shield-halved"></i>
-          </div>
-        </div>
-
-        <!-- Custom Notification Alert Toast -->
-        <div id="login-alert" class="hidden mb-6 p-4 rounded-2xl text-xs font-bold transition-all duration-300 border"></div>
-
-        <!-- Credentials Gateway Form: Diarahkan langsung ke appEngine.auth.submit -->
-        <form id="form-login-gate" onsubmit="if(window.appEngine) { window.appEngine.auth.submit(event); } else { event.preventDefault(); }" class="space-y-6">
-          <div>
-            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gold mb-2">Username / Nama Akun</label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                <i class="fa-solid fa-circle-user text-sm"></i>
-              </span>
-              <input type="text" id="login-username" required autocomplete="username" 
-                class="w-full pl-11 pr-4 py-3.5 bg-[#0B192C]/80 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent text-sm text-white placeholder-slate-500 transition-all font-medium" 
-                placeholder="Contoh: admin / timses1 / saksi1">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gold mb-2">Kata Sandi / Password</label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                <i class="fa-solid fa-lock text-sm"></i>
-              </span>
-              <input type="password" id="login-password" required autocomplete="current-password" 
-                class="w-full pl-11 pr-4 py-3.5 bg-[#0B192C]/80 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent text-sm text-white placeholder-slate-500 transition-all font-medium" 
-                placeholder="••••••••••••">
-            </div>
-          </div>
-
-          <button type="submit" id="btn-login-submit" 
-            class="w-full py-4 px-6 bg-gradient-gold hover:opacity-95 text-navy-dark font-black text-xs tracking-widest rounded-2xl shadow-xl transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2">
-            <span>MASUK RUANG OPERASIONAL</span>
-            <i class="fa-solid fa-right-to-bracket text-xs"></i>
-          </button>
-        </form>
-        
-        <!-- UI Footer Copyright Label -->
-        <p class="text-center text-[10px] text-slate-500 mt-8 tracking-wide font-medium uppercase">
-          Trisula AI Framework &copy; 2026 • K2C Komputindo
-        </p>
+      <h1 class="text-4xl lg:text-5xl font-black tracking-tight leading-none text-white">
+        PILKADES <br>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold via-amber-300 to-yellow-400">VICTORY SYSTEM</span>
+      </h1>
+      <div class="w-20 h-1.5 bg-gradient-gold rounded-full"></div>
+      <p class="text-slate-300 font-light leading-relaxed text-sm lg:text-base">
+        Aplikasi taktis pemenangan Pemilihan Kepala Desa berbasis cloud. Kelola pemetaan target DPT secara akurat, zonasi pemilih rukun tetangga, hingga input cepat hasil real-count C1 plano langsung dari lapangan.
+      </p>
+      <div class="flex items-center gap-4 text-xs font-bold text-slate-400 tracking-wider">
+        <span><i class="fa-solid fa-circle-check text-gold mr-1.5"></i> TRANSPARAN</span>
+        <span><i class="fa-solid fa-circle-check text-gold mr-1.5"></i> AMAN</span>
+        <span><i class="fa-solid fa-circle-check text-gold mr-1.5"></i> REAL-TIME</span>
       </div>
     </div>
   </div>
+
+  <!-- RIGHT PANEL: High-Fidelity Interface Authorization Card -->
+  <div class="flex-1 flex items-center justify-center p-6 sm:p-12 bg-gradient-premium md:bg-none md:bg-[#0B192C]">
+    <div class="w-full max-w-md bg-[#112540]/60 md:bg-[#1E3E62]/40 backdrop-blur-md p-8 sm:p-10 rounded-[2rem] border border-white/10 shadow-2xl relative">
+      <div class="absolute -top-12 -left-12 w-48 h-48 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <!-- App Header Header Branding -->
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-2xl font-black text-white tracking-tight">Masuk Sistem</h2>
+          <p class="text-xs text-slate-400 mt-1">Gunakan akun resmi dari tim pemenangan.</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-gradient-gold flex items-center justify-center text-navy-dark font-black text-xl shadow-lg border border-white/10">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+      </div>
+
+      <!-- Real-Time Error Alert Notification Core -->
+      <div id="login-alert" class="hidden mb-6 p-4 rounded-2xl text-xs font-bold transition-all duration-300 border"></div>
+
+      <!-- Credentials Form Gateway (Event Bound by app.js Runtime) -->
+      <form id="form-login-gate" class="space-y-6">
+        <div>
+          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gold mb-2">Username / Nama Akun</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+              <i class="fa-solid fa-circle-user text-sm"></i>
+            </span>
+            <input type="text" id="login-username" required autocomplete="username" 
+              class="w-full pl-11 pr-4 py-3.5 bg-[#0B192C]/80 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent text-sm text-white placeholder-slate-500 transition-all font-medium" 
+              placeholder="Contoh: admin / timses1">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gold mb-2">Kata Sandi / Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+              <i class="fa-solid fa-lock text-sm"></i>
+            </span>
+            <input type="password" id="login-password" required autocomplete="current-password" 
+              class="w-full pl-11 pr-4 py-3.5 bg-[#0B192C]/80 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent text-sm text-white placeholder-slate-500 transition-all font-medium" 
+              placeholder="••••••••••••">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-login-submit" 
+          class="w-full py-4 px-6 bg-gradient-gold hover:opacity-95 text-navy-dark font-black text-xs tracking-widest rounded-2xl shadow-xl transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2">
+          <span>MASUK RUANG OPERASIONAL</span>
+          <i class="fa-solid fa-right-to-bracket text-xs"></i>
+        </button>
+      </form>
+      
+      <p class="text-center text-[10px] text-slate-500 mt-8 tracking-wide font-medium uppercase">
+        Trisula AI Framework &copy; 2026 • K2C Komputindo
+      </p>
+    </div>
+  </div>
+</div>
 </body>
 </html>
