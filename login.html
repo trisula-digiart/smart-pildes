@@ -1,90 +1,173 @@
-<div class="min-h-screen w-full flex flex-col md:flex-row bg-[#0B192C] font-['Plus_Jakarta_Sans',sans-serif] text-slate-100 overflow-hidden">
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Login - Pilkades Victory System</title>
   
-  <!-- Panel Kiri: Banner Visual Paslon (Otomatis sembunyi di HP/Mobile) -->
-  <div class="hidden md:flex md:w-1/2 lg:w-7/12 relative items-center justify-center p-12 bg-gradient-to-br from-[#0B192C] via-[#112540] to-[#1E3E62] overflow-hidden border-r-4 border-[#D4AF37]">
-    <!-- Background Abstract Pattern Overlays -->
-    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px]"></div>
+  <!-- Tailwind CSS Engine -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Plus Jakarta Sans Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --color-navy-dark: #0B192C;
+      --color-navy-light: #1E3E62;
+      --color-gold: #D4AF37;
+      --color-gold-hover: #AA8B2C;
+      --gradient-premium: linear-gradient(135deg, #0B192C 0%, #1E3E62 100%);
+      --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #AA8B2C 100%);
+      --shadow-soft: 0 10px 30px -5px rgba(11, 25, 44, 0.04), 0 5px 15px -4px rgba(11, 25, 44, 0.02);
+      --shadow-premium: 0 20px 45px -12px rgba(11, 25, 44, 0.12);
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F8FAFC;
+    }
+    .bg-navy-dark { background-color: var(--color-navy-dark); }
+    .bg-navy-light { background-color: var(--color-navy-light); }
+    .bg-gradient-premium { background: var(--gradient-premium); }
+    .bg-gradient-gold { background: var(--gradient-gold); }
+    .text-gold { color: var(--color-gold); }
+    .border-gold { border-color: var(--color-gold); }
+  </style>
+</head>
+<body class="bg-navy-dark min-h-screen flex antialiased">
+
+  <div class="min-h-screen w-full flex flex-col md:flex-row overflow-hidden">
     
-    <!-- Dynamic Banner Image with Overlay -->
-    <div class="absolute inset-0 z-0 transition-all duration-700 hover:scale-105">
-      <img id="login-banner-img" src="https://placehold.co/1200x800/0B192C/D4AF37?text=Banner+Calon+Kepala+Desa" alt="Branding Banner" class="w-full h-full object-cover opacity-35" onerror="this.src='https://placehold.co/1200x800/0b192c/ffffff?text=Branding+Visual+Paslon'">
-      <div class="absolute inset-0 bg-gradient-to-t from-[#0B192C] via-transparent to-transparent"></div>
-    </div>
-
-    <!-- Banner Content -->
-    <div class="relative z-10 max-w-lg text-left space-y-6">
-      <div class="inline-flex items-center gap-2 px-3 py-1 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full">
-        <i class="fa-solid fa-crown text-[#D4AF37] text-xs"></i>
-        <span class="text-xs font-bold text-[#D4AF37] tracking-widest uppercase">Decoupled Enterprise v7.0</span>
-      </div>
-      <h1 class="text-4xl lg:text-5xl font-extrabold tracking-tight leading-none text-white">
-        PILKADES <br>
-        <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-amber-300">VICTORY SYSTEM</span>
-      </h1>
-      <div class="w-20 h-1.5 bg-gradient-to-r from-[#D4AF37] to-amber-300 rounded-full"></div>
-      <p class="text-slate-300 font-light leading-relaxed text-sm lg:text-base">
-        Aplikasi pengawalan suara pemenangan Pilkades berbasis cloud terenkripsi. Kelola target suara pemilih, zonasi dukungan wilayah, hingga rekapitulasi form C1 real-count secara presisi dari lapangan.
-      </p>
-    </div>
-  </div>
-
-  <!-- Panel Kanan: Form Login (Lebar penuh di Mobile/HP) -->
-  <div class="flex-1 flex items-center justify-center p-6 sm:p-12 md:w-1/2 lg:w-5/12 bg-gradient-to-tr from-[#071120] to-[#112239]">
-    <div class="w-full max-w-md bg-[#112540]/60 backdrop-blur-md p-8 sm:p-10 rounded-3xl border border-white/10 shadow-2xl relative">
-      <!-- Glow effect decorative behind the card -->
-      <div class="absolute -top-12 -left-12 w-48 h-48 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- LEFT PANEL: Dynamic Visual Banner (Hides on Mobile/HP) -->
+    <div class="hidden md:flex md:w-1/2 lg:w-7/12 relative items-center justify-center p-12 bg-gradient-premium overflow-hidden border-r-[5px] border-gold">
+      <!-- Background Grid Overlay -->
+      <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px]"></div>
       
-      <!-- App Header Icon on Mobile -->
-      <div class="flex items-center justify-between mb-8">
-        <div>
-          <h2 class="text-2xl font-bold text-white tracking-tight">Masuk Sistem</h2>
-          <p class="text-xs text-slate-400 mt-1">Gunakan akun kredensial resmi tim pemenangan.</p>
+      <!-- Custom Luxury Floating Blur Lights -->
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+      
+      <!-- Banner Content -->
+      <div class="relative z-10 max-w-lg text-left space-y-6">
+        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full">
+          <i class="fa-solid fa-crown text-gold text-xs"></i>
+          <span class="text-xs font-bold text-gold tracking-widest uppercase">Decoupled Premium v7.0</span>
         </div>
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-amber-500 flex items-center justify-center text-[#0B192C] font-extrabold text-xl shadow-lg shadow-[#D4AF37]/20">
-          <i class="fa-solid fa-shield-halved"></i>
+        <h1 class="text-4xl lg:text-5xl font-black tracking-tight leading-none text-white">
+          PILKADES <br>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold via-amber-300 to-yellow-400">VICTORY SYSTEM</span>
+        </h1>
+        <div class="w-20 h-1.5 bg-gradient-gold rounded-full"></div>
+        <p class="text-slate-300 font-light leading-relaxed text-sm lg:text-base">
+          Aplikasi taktis pemenangan Pemilihan Kepala Desa berbasis cloud. Kelola pemetaan target DPT secara akurat, zonasi pemilih rukun tetangga, hingga input cepat hasil real-count C1 plano langsung dari lapangan.
+        </p>
+        <div class="flex items-center gap-4 text-xs font-bold text-slate-400 tracking-wider">
+          <span><i class="fa-solid fa-circle-check text-gold mr-1.5"></i> TRANSPARAN</span>
+          <span><i class="fa-solid fa-circle-check text-gold mr-1.5"></i> AMAN</span>
+          <span><i class="fa-solid fa-circle-check text-gold mr-1.5"></i> REAL-TIME</span>
         </div>
       </div>
+    </div>
 
-      <!-- Action Toast Alert Box -->
-      <div id="login-alert" class="hidden mb-6 p-4 rounded-xl text-xs font-bold transition-all duration-300"></div>
-
-      <!-- Form Inputs -->
-      <form id="form-login-gate" onsubmit="appEngine.auth.submit(event)" class="space-y-6">
-        <div>
-          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-[#D4AF37] mb-2">Username / Nama Akun</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-              <i class="fa-solid fa-circle-user text-sm"></i>
-            </span>
-            <input type="text" id="login-username" required autocomplete="username" 
-              class="w-full pl-11 pr-4 py-3.5 bg-[#0B192C]/80 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent text-sm text-white placeholder-slate-500 transition-all font-medium" 
-              placeholder="Masukkan username anda">
+    <!-- RIGHT PANEL: Clean Interactive Authentication Card -->
+    <div class="flex-1 flex items-center justify-center p-6 sm:p-12 bg-gradient-premium md:bg-none md:bg-[#0B192C]">
+      <div class="w-full max-w-md bg-[#112540]/60 md:bg-[#1E3E62]/40 backdrop-blur-md p-8 sm:p-10 rounded-[2rem] border border-white/10 shadow-2xl relative">
+        <!-- Glow Effect behind card -->
+        <div class="absolute -top-12 -left-12 w-48 h-48 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <!-- App Header Brand Info -->
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-2xl font-black text-white tracking-tight">Masuk Sistem</h2>
+            <p class="text-xs text-slate-400 mt-1">Gunakan akun resmi dari tim pemenangan.</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-gradient-gold flex items-center justify-center text-navy-dark font-black text-xl shadow-lg border border-white/10">
+            <i class="fa-solid fa-shield-halved"></i>
           </div>
         </div>
 
-        <div>
-          <label class="block text-[10px] font-extrabold uppercase tracking-widest text-[#D4AF37] mb-2">Password / Sandi Akses</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-              <i class="fa-solid fa-lock text-sm"></i>
-            </span>
-            <input type="password" id="login-password" required autocomplete="current-password" 
-              class="w-full pl-11 pr-4 py-3.5 bg-[#0B192C]/80 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent text-sm text-white placeholder-slate-500 transition-all font-medium" 
-              placeholder="••••••••••••">
-          </div>
-        </div>
+        <!-- Custom Notification Alert Toast -->
+        <div id="login-alert" class="hidden mb-6 p-4 rounded-2xl text-xs font-bold transition-all duration-300 border"></div>
 
-        <button type="submit" id="btn-login-submit" 
-          class="w-full py-4 px-6 bg-gradient-to-r from-[#D4AF37] to-amber-500 hover:from-amber-500 hover:to-yellow-600 text-[#0B192C] font-extrabold text-xs tracking-widest rounded-2xl shadow-xl shadow-[#D4AF37]/10 transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2">
-          <span>MASUK RUANG OPERASIONAL</span>
-          <i class="fa-solid fa-right-to-bracket text-xs"></i>
-        </button>
-      </form>
-      
-      <!-- Footer Info -->
-      <p class="text-center text-[10px] text-slate-500 mt-8 tracking-wide font-medium">
-        K2C KOMPUTINDO &bull; TRISULA AI FRAMEWORK &copy; 2026
-      </p>
+        <!-- Credentials Gateway Form -->
+        <form id="form-login-gate" onsubmit="handleFormSubmit(event)" class="space-y-6">
+          <div>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gold mb-2">Username / Nama Akun</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                <i class="fa-solid fa-circle-user text-sm"></i>
+              </span>
+              <input type="text" id="login-username" required autocomplete="username" 
+                class="w-full pl-11 pr-4 py-3.5 bg-[#0B192C]/80 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent text-sm text-white placeholder-slate-500 transition-all font-medium" 
+                placeholder="Contoh: admin / timses1 / saksi1">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-extrabold uppercase tracking-widest text-gold mb-2">Kata Sandi / Password</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                <i class="fa-solid fa-lock text-sm"></i>
+              </span>
+              <input type="password" id="login-password" required autocomplete="current-password" 
+                class="w-full pl-11 pr-4 py-3.5 bg-[#0B192C]/80 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent text-sm text-white placeholder-slate-500 transition-all font-medium" 
+                placeholder="••••••••••••">
+            </div>
+          </div>
+
+          <button type="submit" id="btn-login-submit" 
+            class="w-full py-4 px-6 bg-gradient-gold hover:opacity-95 text-navy-dark font-black text-xs tracking-widest rounded-2xl shadow-xl transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2">
+            <span>MASUK RUANG OPERASIONAL</span>
+            <i class="fa-solid fa-right-to-bracket text-xs"></i>
+          </button>
+        </form>
+        
+        <!-- UI Footer Copyright Label -->
+        <p class="text-center text-[10px] text-slate-500 mt-8 tracking-wide font-medium uppercase">
+          Trisula AI Framework &copy; 2026 • K2C Komputindo
+        </p>
+      </div>
     </div>
   </div>
-</div>
+
+  <script>
+    // Fungsi simulasi biar lu bisa klik tombol preview dan langsung ngetes form loginnya
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const user = document.getElementById('login-username').value.trim();
+      const pass = document.getElementById('login-password').value.trim();
+      const alertBox = document.getElementById('login-alert');
+      const btn = document.getElementById('btn-login-submit');
+
+      // Tampilkan status loading simulasi
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-rotate animate-spin mr-2"></i> MEMVERIFIKASI...';
+
+      setTimeout(() => {
+        if ((user === 'admin' && pass === 'admin123') || 
+            (user === 'timses1' && pass === 'timses123') || 
+            (user === 'saksi1' && pass === 'saksi123')) {
+          
+          alertBox.className = "mb-6 p-4 rounded-2xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+          alertBox.innerHTML = '<i class="fa-solid fa-circle-check mr-2"></i> LOGIN BERHASIL! Selamat datang, mengalihkan halaman...';
+          alertBox.classList.remove('hidden');
+
+          setTimeout(() => {
+            // Simulasi redirect sukses
+            btn.innerHTML = 'MASUK RUANG OPERASIONAL';
+            btn.disabled = false;
+          }, 1500);
+
+        } else {
+          alertBox.className = "mb-6 p-4 rounded-2xl text-xs font-bold bg-red-500/10 text-red-400 border-red-500/30";
+          alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i> GAGAL! Gunakan salah satu: (admin/admin123), (timses1/timses123), atau (saksi1/saksi123)';
+          alertBox.classList.remove('hidden');
+          btn.innerHTML = 'MASUK RUANG OPERASIONAL';
+          btn.disabled = false;
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
