@@ -1,7 +1,6 @@
-<!-- Component Template Payload - Mobile First Functional Field Operation Panel UI Layout Specification -->
+<!-- STREAMING_CHUNK: Structuring mobile-first field operations hub... -->
 <div class="flex-1 flex flex-col w-full max-w-md mx-auto bg-[#F8FAFC] shadow-2xl min-h-screen relative pb-16">
   
-  <!-- Mobile Premium Corporate Header Component -->
   <header class="bg-gradient-premium text-white p-4 flex items-center justify-between border-b-4 border-gold sticky top-0 z-40 shadow-md">
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-xl bg-gradient-gold text-navy-dark font-black flex items-center justify-center text-base shadow-md border border-gold/30"><i class="fa-solid fa-tower-broadcast"></i></div>
@@ -10,19 +9,25 @@
         <p class="text-[10px] text-slate-300 font-semibold tracking-wide truncate max-w-[170px]" id="timses-profile-name">Petugas Lapangan</p>
       </div>
     </div>
-    <!-- Logout action trigger utility -->
+    <!-- Logout Button -->
     <button onclick="appEngine.auth.logout()" class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 hover:bg-red-950 hover:text-red-200 transition flex items-center justify-center text-xs shadow-inner border border-slate-700/60">
       <i class="fa-solid fa-power-off"></i>
     </button>
   </header>
 
-  <!-- Mobile Form Workspace Section Scaffolding Container -->
   <main class="flex-1 p-4 space-y-5 overflow-y-auto">
-    
-    <!-- Toast Message Intermediary Element Container Box System -->
+    <!-- Sync Status Button & Indicator inside mobile layout -->
+    <div class="flex justify-between items-center bg-white p-3 rounded-2xl border border-slate-100 shadow-sm no-print">
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-database mr-1"></i> Data Sync Status</span>
+      <button onclick="appEngine.admin.syncData()" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-extrabold rounded-lg border border-emerald-200 flex items-center gap-1 transition">
+        <i class="fa-solid fa-rotate animate-spin"></i> SYNCED
+      </button>
+    </div>
+
+    <!-- Toast Notification Alert -->
     <div id="field-alert" class="hidden p-4 rounded-2xl text-xs font-extrabold shadow-sm transition-all duration-300"></div>
 
-    <!-- ROLE CONDITION PANEL A: Generic Voter Orientation Mapping (Active only for Timses Roles) -->
+    <!-- PANEL A: Timses Voter Orientation Mapping -->
     <section id="pane-timses-voter" class="space-y-4">
       <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm space-y-5 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-2 h-full bg-navy-dark"></div>
@@ -60,13 +65,13 @@
       </div>
     </section>
 
-    <!-- ROLE CONDITION PANEL B: Physical C1 Plano Form Calculations Input (Active only for Saksi Roles) -->
+    <!-- PANEL B: Saksi C1 Real Count -->
     <section id="pane-saksi-realcount" class="hidden space-y-4">
       <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm space-y-5 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-2 h-full bg-gold"></div>
         <div class="border-b border-slate-100 pb-3">
           <h2 class="text-xs font-black text-navy-dark uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-square-poll-horizontal text-gold text-sm"></i> Input Berita Acara C1 TPS</h2>
-          <p class="text-[11px] text-slate-400 mt-1 font-semibold leading-relaxed">Salin angka perolehan suara secara presisi dari fisik dokumen lembaran C1 plano hasil perhitungan saksi TPS.</p>
+          <p class="text-[11px] text-slate-400 mt-1 font-semibold leading-relaxed">Salin angka perolehan suara secara presisi dari fisik dokumen lembaran C1 plano hasil perhitungan resmi TPS.</p>
         </div>
 
         <form id="form-realcount-submission" onsubmit="appEngine.field.submitRealCount(event)" class="space-y-4">
@@ -100,7 +105,6 @@
     </section>
   </main>
 
-  <!-- Mobile Screen Bottom Static Navigation Component -->
   <footer class="absolute bottom-0 inset-x-0 h-14 bg-white border-t border-slate-200 flex items-center justify-around text-slate-400 px-6 z-40 shadow-md">
     <div class="flex flex-col items-center text-navy-dark text-[9px] font-extrabold uppercase tracking-widest">
       <i class="fa-solid fa-folder-open text-base text-gold mb-0.5 animate-pulse"></i>
