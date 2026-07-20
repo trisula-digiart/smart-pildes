@@ -1,8 +1,8 @@
-<!-- Component Template Payload - High End Control Room Hub Panel Layout Desktop Specification -->
+<!-- STREAMING_CHUNK: Structuring premium dashboard admin workspace... -->
 <div class="flex-1 flex flex-col md:flex-row w-full min-h-screen bg-[#F8FAFC]">
   
-  <!-- Left Side Corporate Style Panel Sidebar Navigation System -->
-  <aside class="w-full md:w-66 bg-navy-dark text-slate-300 flex flex-col no-print border-r border-slate-800 shadow-xl relative z-20">
+  <!-- Left Side Corporate Style Panel Sidebar Navigation -->
+  <aside class="w-full md:w-64 bg-navy-dark text-slate-300 flex flex-col no-print border-r border-slate-800 shadow-xl relative z-20">
     <div class="p-6 flex items-center justify-between border-b border-slate-800">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center text-navy-dark font-black text-xl shadow-lg border border-gold/40"><i class="fa-solid fa-crown text-sm"></i></div>
@@ -13,32 +13,33 @@
       </div>
     </div>
     
-    <!-- Multi-Tab Menu Anchors Link Block System -->
     <nav class="flex-1 p-4 space-y-2">
       <button onclick="appEngine.router.switchTab('admin-overview')" class="tab-btn w-full flex items-center gap-3 px-4 py-3.5 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all text-gold bg-slate-800/60"><i class="fa-solid fa-circle-nodes text-sm w-5"></i>Ringkasan Utama</button>
       <button onclick="appEngine.router.switchTab('admin-voters')" class="tab-btn w-full flex items-center gap-3 px-4 py-3.5 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all text-slate-400 hover:bg-slate-800/40 hover:text-white"><i class="fa-solid fa-users-viewfinder text-sm w-5"></i>Data Pemilih Lapangan</button>
       <button onclick="appEngine.router.switchTab('admin-settings')" class="tab-btn w-full flex items-center gap-3 px-4 py-3.5 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all text-slate-400 hover:bg-slate-800/40 hover:text-white"><i class="fa-solid fa-gears text-sm w-5"></i>Pengaturan Sistem</button>
     </nav>
     
-    <!-- Branding Label Footer Meta Block Info -->
     <div class="p-5 border-t border-slate-800 bg-slate-950/20 text-center text-[10px] text-slate-500 font-bold tracking-wide space-y-1">
       <i class="fa-solid fa-shield-halved text-gold/30 block text-base"></i>
       <span>TRANSPARAN • AMAN • TERPERCAYA</span>
     </div>
   </aside>
 
-  <!-- Right Side Layout Panel Management Content Intermediary Container Workspace -->
+  <!-- Right Side Content Area -->
   <main class="flex-1 flex flex-col bg-[#F8FAFC] overflow-y-auto print-container relative z-10">
     
-    <!-- CORE CORPORATE MASTER HEADER TOP BAR VIEW COMPONENT -->
+    <!-- HEADER TOP BAR: Real-Time Sync Indicator, Notification, and Profile Avatar -->
     <header class="w-full bg-white border-b border-slate-200/80 px-6 sm:px-8 py-4 flex items-center justify-between no-print sticky top-0 z-30 shadow-sm">
       <div class="flex items-center gap-3">
         <h1 class="text-base font-black text-navy-dark tracking-tight hidden sm:block">Aplikasi Pemenangan Calon Kepala Desa</h1>
-        <span class="px-2.5 py-1 bg-gradient-gold text-navy-dark text-[9px] font-black uppercase rounded-md tracking-wider shadow-sm border border-gold/20">PREMIUM</span>
+        <span id="system-mode-badge" class="px-2.5 py-1 bg-gradient-gold text-navy-dark text-[9px] font-black uppercase rounded-md tracking-wider shadow-sm border border-gold/20">LIVE CLOUD API</span>
       </div>
       
-      <!-- Interactive Notification Box and Profile Selector Dropdown System Component -->
       <div class="flex items-center gap-4">
+        <!-- Live Sync Status Button Indicator -->
+        <button onclick="appEngine.admin.syncData()" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[10px] font-extrabold rounded-xl border border-emerald-200 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-rotate animate-spin text-xs"></i> SINKRON
+        </button>
         <div class="relative w-9 h-9 rounded-xl bg-slate-50 text-slate-500 border border-slate-200 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition shadow-sm">
           <i class="fa-solid fa-bell text-sm"></i>
           <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[9px] font-black text-white flex items-center justify-center shadow-sm border border-white">3</span>
@@ -54,7 +55,6 @@
           </div>
           <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 group-hover:text-slate-600 transition"></i>
           
-          <!-- Dropdown System Menu Popover Container Component Box -->
           <div class="dropdown-container-box hidden absolute right-0 top-12 w-48 bg-white border border-slate-100 rounded-xl shadow-xl p-2 text-left z-50">
             <button onclick="appEngine.auth.logout()" class="w-full text-left px-3 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-2"><i class="fa-solid fa-power-off text-xs"></i> Keluar Sistem</button>
           </div>
@@ -62,18 +62,18 @@
       </div>
     </header>
 
-    <!-- INTERACTIVE CONTENT WORKSPACE LAYER VIEW -->
+    <!-- CONTENT WORKSPACE -->
     <div class="p-6 sm:p-8 flex-1 space-y-6">
       
-      <!-- TAB SECTION VIEW CONTENT 1: OVERVIEW STATISTICS CARD & DENSE CHARTS -->
+      <!-- TAB SECTION VIEW CONTENT 1: OVERVIEW STATISTICS & DENSE CHARTS -->
       <section id="tab-admin-overview" class="tab-content space-y-6">
         
-        <!-- Premium Visual Supremacy Hero Banner Section Layout -->
+        <!-- Premium Hero Banner -->
         <div class="w-full bg-gradient-premium rounded-[2rem] p-6 sm:p-8 text-white relative overflow-hidden shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6 border border-slate-800">
           <div class="absolute inset-0 bg-cover bg-center opacity-10 mix-blend-overlay scale-105" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200');"></div>
           <div class="relative z-10 space-y-2 max-w-xl">
             <span class="text-gold font-extrabold text-xs uppercase tracking-widest block">VISI & MISI CALON KADES</span>
-            <h2 class="text-3xl font-black tracking-tight leading-snug">BERSAMA MEMBANGUN DESA YANG MAJU & SEJAHTERA</h2>
+            <h2 class="text-3xl font-black tracking-tight leading-snug" id="hero-candidate-banner">BERSAMA MEMBANGUN DESA YANG MAJU & SEJAHTERA</h2>
             <p class="text-xs text-slate-300 font-normal tracking-wider pt-1">Transparan • Amanah • Inovatif • Partisipatif</p>
           </div>
           <div class="relative z-10 shrink-0">
@@ -81,10 +81,8 @@
           </div>
         </div>
 
-        <!-- Analytical Dense Component Rows Layout Grid -->
+        <!-- Analytical Dense Card Metrics -->
         <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          
-          <!-- Grid Block A: Core Statistics Row Widgets (Occupies 3 columns display space) -->
           <div class="xl:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div class="card-premium p-6 flex items-center gap-4 relative overflow-hidden">
               <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-900 text-xl flex items-center justify-center font-bold shadow-inner"><i class="fa-solid fa-address-card"></i></div>
@@ -111,19 +109,18 @@
             </div>
           </div>
 
-          <!-- Grid Block B: Quick Menu Sidebar Widget Control Component (Occupies 1 column space) -->
+          <!-- Quick Menu Panel -->
           <div class="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between">
             <h3 class="text-xs font-black text-navy-dark uppercase tracking-widest mb-3 flex items-center justify-between border-b border-slate-100 pb-2"><span>Menu Cepat</span><i class="fa-solid fa-star text-gold text-xs"></i></h3>
             <div class="space-y-1.5 flex-1">
               <button onclick="appEngine.router.switchTab('admin-voters')" class="w-full p-2.5 text-xs font-bold text-left text-slate-600 hover:bg-slate-50 hover:text-navy-dark rounded-xl flex items-center justify-between transition"><span><i class="fa-solid fa-shield-heart text-blue-800 mr-2"></i> Survey & Aspirasi</span><i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></button>
-              <button onclick="appEngine.router.switchTab('admin-settings')" class="w-full p-2.5 text-xs font-bold text-left text-slate-600 hover:bg-slate-50 hover:text-navy-dark rounded-xl flex items-center justify-between transition"><span><i class="fa-solid fa-file-invoice text-amber-600 mr-2"></i> Dokumen Penting</span><i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></button>
+              <button onclick="appEngine.router.switchTab('admin-settings')" class="w-full p-2.5 text-xs font-bold text-left text-slate-600 hover:bg-slate-50 hover:text-navy-dark rounded-xl flex items-center justify-between transition"><span><i class="fa-solid fa-file-invoice text-amber-600 mr-2"></i> Pengaturan</span><i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></button>
             </div>
           </div>
         </div>
 
-        <!-- High-End Charts Visualizers & Summary Tables Module Components Grid Layout -->
+        <!-- Charts & Summary Tables -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Doughnut Chart Container Object -->
           <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm lg:col-span-5 flex flex-col">
             <h3 class="text-xs font-black text-navy-dark uppercase tracking-widest mb-4 border-b border-slate-100 pb-3 flex items-center justify-between"><span>Statistik Dukungan</span><span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[9px]">Real Count</span></h3>
             <div class="relative flex-1 min-h-[260px] flex items-center justify-center">
@@ -131,7 +128,6 @@
             </div>
           </div>
           
-          <!-- Numerical Data Recapitulation Table Grid Array Component -->
           <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm lg:col-span-7 overflow-hidden flex flex-col">
             <h3 class="text-xs font-black text-navy-dark uppercase tracking-widest mb-4 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-table text-gold"></i> Detil Rekapitulasi Perolehan TPS</h3>
             <div class="overflow-x-auto flex-1 max-h-[280px]">
@@ -146,16 +142,15 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
-                  <!-- Dynamically Injected by Front End JS App Engine Core -->
+                  <!-- Injected by JS -->
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- Dynamic Dense Information Layout: Berita Terbaru & Agenda Widgets Area Grid -->
+        <!-- Berita & Agenda Widgets -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- News Widgets Card Component -->
           <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 class="text-xs font-black text-navy-dark uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-newspaper text-blue-900"></i> Berita Terbaru</h3>
@@ -173,7 +168,6 @@
             </div>
           </div>
 
-          <!-- Agenda Widgets Card Component -->
           <div class="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-sm space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 class="text-xs font-black text-navy-dark uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-calendar-check text-amber-600"></i> Agenda Terdekat</h3>
@@ -195,7 +189,7 @@
         </div>
       </section>
 
-      <!-- TAB SECTION VIEW CONTENT 2: VOTER DATA COMPILATION MANAGEMENT TABLE -->
+      <!-- TAB SECTION VIEW CONTENT 2: VOTER DATA COMPILATION MANAGEMENT -->
       <section id="tab-admin-voters" class="tab-content hidden space-y-4">
         <div class="flex items-center justify-between border-b border-slate-200 pb-3 no-print">
           <div>
@@ -219,16 +213,16 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
-              <!-- Dynamically Populated by Front End Engine Logic -->
+              <!-- Injected by JS -->
             </tbody>
           </table>
         </div>
       </section>
 
-      <!-- TAB SECTION VIEW CONTENT 3: DYNAMIC APPLICATION CONFIGURATION & BRANDING -->
+      <!-- TAB SECTION VIEW CONTENT 3: SETTINGS -->
       <section id="tab-admin-settings" class="tab-content hidden space-y-4 no-print">
         <div class="border-b border-slate-200 pb-3">
-          <h3 class="text-xs font-black text-navy-dark uppercase tracking-widest">Konfigurasi Atribut branding Aplikasi</h3>
+          <h3 class="text-xs font-black text-navy-dark uppercase tracking-widest">Konfigurasi Atribut Branding Aplikasi</h3>
         </div>
         <div class="max-w-2xl bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
           <form id="setting-form" onsubmit="appEngine.admin.saveSettings(event)" class="space-y-5">
