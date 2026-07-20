@@ -311,8 +311,9 @@ const appEngine = {
       const res = await appEngine.request("login", { username, password });
 
       if (res.status === "success") {
+        // REVISI 1: MEMASTIKAN TOKEN DIKEMAS BERSAMA USER SESSION DI MEMORI AKTIF
         localStorage.setItem("pvs_session_v71", JSON.stringify({ token: res.token, user: res.user }));
-        appEngine.session.user = res.user;
+        appEngine.session.user = { ...res.user, token: res.token };
         appEngine.router.loadView(res.user.role);
       } else {
         if (alertBox) {
@@ -331,7 +332,8 @@ const appEngine = {
       const stored = localStorage.getItem("pvs_session_v71");
       if (stored) {
         const sessionData = JSON.parse(stored);
-        appEngine.session.user = sessionData.user;
+        // REVISI 1: BIND TOKEN DENGAN AKUN SAAT CHECK SESSION
+        appEngine.session.user = { ...sessionData.user, token: sessionData.token };
         appEngine.router.loadView(sessionData.user.role);
       } else {
         appEngine.router.loadView("login");
@@ -388,15 +390,16 @@ const appEngine = {
     },
 
     bindHeaderInteractions: function() {
-      // Perbaikan logout, dropdown, dan arrow click
+      // REVISI 2: PERBAIKAN TOTAL DROP-DOWN, ARROW, DAN LOGOUT CLONE CONTROLLER
       const profileTrigger = document.getElementById("btn-admin-profile-trigger");
       const dropdownBox = document.getElementById("box-admin-dropdown");
       
       if (profileTrigger && dropdownBox) {
+        // Hapus listeners lama dengan kloning bersih
         const clone = profileTrigger.cloneNode(true);
         profileTrigger.replaceWith(clone);
         
-        // Re-fetch dropdown dan arrow anak dari hasil kloning
+        // Cari ulang dropdown & logout di dalam clone aktif DOM saat ini
         const newDropdown = clone.querySelector("#box-admin-dropdown");
         clone.addEventListener("click", function(e) {
           e.preventDefault();
@@ -406,7 +409,6 @@ const appEngine = {
           if (notifBox) notifBox.classList.add("hidden");
         });
 
-        // Event click untuk tombol keluar sistem di dalam hasil kloning
         const logoutBtn = clone.querySelector("#btn-admin-logout");
         if(logoutBtn) {
           logoutBtn.addEventListener("click", function(e) {
@@ -417,7 +419,6 @@ const appEngine = {
         }
       }
 
-      // Kloning tombol notifikasi
       const notifTrigger = document.getElementById("btn-admin-notification");
       const notifBox = document.getElementById("box-admin-notification");
       if (notifTrigger && notifBox) {
@@ -431,7 +432,6 @@ const appEngine = {
         });
       }
 
-      // Kloning tombol sinkronisasi
       const syncBtn = document.getElementById("btn-admin-sync");
       if (syncBtn) {
         const clone = syncBtn.cloneNode(true);
@@ -451,7 +451,6 @@ const appEngine = {
         });
       }
 
-      // Menutup modal otomatis saat klik di luar
       document.addEventListener("click", function() {
         const drop = document.getElementById("box-admin-dropdown");
         const boxN = document.getElementById("box-admin-notification");
