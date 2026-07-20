@@ -25,7 +25,8 @@
       </div>
     </div>
     
-    <button onclick="if(window.appEngine) appEngine.auth.logout()" class="w-9 h-9 bg-slate-800/80 text-red-400 rounded-xl border border-white/5 flex items-center justify-center text-xs active:scale-95 transition">
+    <!-- KUNCI PERBAIKAN: Ditambahkan ID unik 'btn-timses-logout' untuk mengikat memori JavaScript -->
+    <button id="btn-timses-logout" class="w-9 h-9 bg-slate-800/80 text-red-400 rounded-xl border border-white/5 flex items-center justify-center text-xs active:scale-95 transition">
       <i class="fa-solid fa-power-off"></i>
     </button>
   </header>
@@ -34,6 +35,7 @@
   <main class="flex-1 p-5 space-y-5 max-w-md w-full mx-auto">
     
     <div class="w-full bg-gradient-premium rounded-2xl p-5 text-white relative overflow-hidden shadow border border-slate-800">
+      <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px]"></div>
       <span class="text-gold font-bold text-[9px] uppercase tracking-widest block">Kampanye Taktis</span>
       <h3 class="text-base font-black mt-1 leading-snug">KAWAL SUARA, KUNCI KEMENANGAN DESA</h3>
     </div>
@@ -44,7 +46,6 @@
         <h4 class="text-xs font-black text-navy-dark uppercase tracking-wider"><i class="fa-solid fa-user-plus text-gold mr-1.5"></i> Pendataan Warga DPT</h4>
       </div>
 
-      <!-- Real-Time Notification Feedback Box for Field Workers -->
       <div id="field-alert" class="hidden p-4 rounded-xl text-xs font-bold shadow-sm"></div>
 
       <form id="form-voter-submission" onsubmit="if(window.appEngine) { window.appEngine.field.submitVoter(event); } else { event.preventDefault(); }" class="space-y-4">
