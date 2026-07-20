@@ -8,7 +8,7 @@
  */
 
 // !!! TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT (GAS) LU DI SINI UNTUK MODE CLOUD !!!
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyCctiDjoWcgTPHqDghNC-HUfuUSuLHa0nqoSX384HuAtrtujumwsr-DpylQyVK6gYA/exec"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzSCAutKZdHJpIcr7FDB2Gfo7vhccILkCqeoRnMc_96QrQw_FhWhDHZVJEO0sEUBzNt/exec"; 
 
 const appEngine = {
   isSimulation: false,
