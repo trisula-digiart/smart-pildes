@@ -166,7 +166,7 @@ const appEngine = {
     },
 
     loadView: async function(role) {
-      const container = document.getElementById("app-root");[cite: 2]
+      const container = document.getElementById("app-root");
       container.innerHTML = `
         <div class="flex-1 flex flex-col items-center justify-center bg-[#0B192C] text-white min-h-screen">
           <div class="animate-spin rounded-full h-12 w-12 border-4 border-t-transparent border-[#D4AF37] mb-4"></div>
@@ -179,7 +179,7 @@ const appEngine = {
         const res = await fetch(viewFile);
         if (!res.ok) throw new Error("Template HTML tidak ditemukan.");
         
-        container.innerHTML = await res.text();[cite: 2]
+        container.innerHTML = await res.text();
 
         if (normalizedRole === "LOGIN") {
           appEngine.auth.bindLoginForm();
@@ -343,12 +343,10 @@ const appEngine = {
       head.innerHTML = `<tr><th class="p-3">Nama Warga</th><th class="p-3">NIK</th><th class="p-3">Dusun</th><th class="p-3 text-center">RT/RW</th></tr>`;
       body.innerHTML = "";
       
-      if (this.isSimulation) {
-        const dptList = JSON.parse(localStorage.getItem("sim_data_dpt"));
-        dptList.forEach(item => {
-          body.innerHTML += `<tr class="border-b"><td class="p-3 font-bold">${item.nama_warga}</td><td class="p-3 font-mono">${item.nik}</td><td class="p-3">${item.dusun}</td><td class="p-3 text-center">RT ${item.rt} / RW ${item.rw}</td></tr>`;
-        });
-      }
+      const dptList = JSON.parse(localStorage.getItem("sim_data_dpt")) || [];
+      dptList.forEach(item => {
+        body.innerHTML += `<tr class="border-b"><td class="p-3 font-bold">${item.nama_warga}</td><td class="p-3 font-mono">${item.nik}</td><td class="p-3">${item.dusun}</td><td class="p-3 text-center">RT ${item.rt} / RW ${item.rw}</td></tr>`;
+      });
     }
   },
 
