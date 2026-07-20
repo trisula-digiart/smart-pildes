@@ -1,6 +1,6 @@
 /**
  * ==========================================================
- * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.3
+ * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.4
  * Features: Auto simulation mode fallback, decoupling routers,
  *           advanced matrix filters (DPT, Vote Records),
  *           indestructible global click event delegation, 
@@ -22,7 +22,7 @@ const appEngine = {
   init: async function() {
     this.checkDatabaseFallback();
     this.auth.checkSession();
-    this.bindGlobalDelegation();
+    this.bindGlobalDelegation(); // Berhasil dipanggil dengan aman karena sudah di root level
   },
 
   checkDatabaseFallback: function() {
@@ -208,6 +208,69 @@ const appEngine = {
     }
   },
 
+  // Dipindahkan ke tingkat akar objek (root level) agar bebas dipanggil oleh init()
+  bindGlobalDelegation: function() {
+    document.addEventListener("click", function(e) {
+      // Dropdown Profil Terpilih
+      const profileTrigger = e.target.closest("#btn-admin-profile-trigger");
+      const dropdownBox = document.getElementById("box-admin-dropdown");
+      if (profileTrigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropdownBox) dropdownBox.classList.toggle("hidden");
+        const notifBox = document.getElementById("box-admin-notification");
+        if (notifBox) notifBox.classList.add("hidden");
+        return;
+      }
+
+      // Tombol Keluar / Logout
+      const logoutBtn = e.target.closest("#btn-admin-logout");
+      if (logoutBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        appEngine.auth.logout();
+        return;
+      }
+
+      // Lonceng Notifikasi
+      const notifTrigger = e.target.closest("#btn-admin-notification");
+      const notifBox = document.getElementById("box-admin-notification");
+      if (notifTrigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (notifBox) notifBox.classList.toggle("hidden");
+        if (dropdownBox) dropdownBox.classList.add("hidden");
+        return;
+      }
+
+      // Tombol Sinkronisasi Data Manual
+      const syncBtn = e.target.closest("#btn-admin-sync");
+      if (syncBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const targetIcon = document.getElementById("icon-admin-sync");
+        if (targetIcon) targetIcon.classList.add("animate-spin");
+        syncBtn.disabled = true;
+        appEngine.admin.syncData().then(() => {
+          setTimeout(() => {
+            const finalIcon = document.getElementById("icon-admin-sync");
+            if (finalIcon) finalIcon.classList.remove("animate-spin");
+            syncBtn.disabled = false;
+          }, 800);
+        });
+        return;
+      }
+
+      // Tutup Dropdown Jika Klik Area Luar
+      if (dropdownBox && !e.target.closest("#box-admin-dropdown") && !e.target.closest("#btn-admin-profile-trigger")) {
+        dropdownBox.classList.add("hidden");
+      }
+      if (notifBox && !e.target.closest("#box-admin-notification") && !e.target.closest("#btn-admin-notification")) {
+        notifBox.classList.add("hidden");
+      }
+    });
+  },
+
   router: {
     views: {
       login: "login.html",
@@ -271,7 +334,6 @@ const appEngine = {
         
         appEngine.request("getBranding").then(res => {
           if(res && res.status === "success" && res.branding.drive_id_banner_login) {
-            // REVISI 7.1.3: Convert Drive Link otomatis & sembunyikan overlay teks statis agar foto paslon nampak utuh presisi
             const leftPanel = document.getElementById("login-left-banner");
             const overlayContent = document.getElementById("login-overlay-content");
             if(leftPanel) {
@@ -320,7 +382,6 @@ const appEngine = {
       const res = await appEngine.request("login", { username, password });
 
       if (res.status === "success") {
-        // REVISI 7.1.3: Amankan Session Token langsung di dalam sub-objek user session
         const sessionData = { token: res.token, user: { ...res.user, token: res.token } };
         localStorage.setItem("pvs_session_v71", JSON.stringify(sessionData));
         appEngine.session.user = sessionData.user;
@@ -342,7 +403,6 @@ const appEngine = {
       const stored = localStorage.getItem("pvs_session_v71");
       if (stored) {
         const sessionData = JSON.parse(stored);
-        // REVISI 7.1.3: Amankan Restorasi Token dari LocalStorage agar data DPT tidak kosong setelah halaman disegarkan
         appEngine.session.user = { ...sessionData.user, token: sessionData.token };
         appEngine.router.loadView(sessionData.user.role);
       } else {
@@ -388,69 +448,6 @@ const appEngine = {
           }
         }
       }
-    },
-
-    // REVISI 7.1.3: Mengunci interaksi admin secara global menggunakan delegasi event murni agar panah dropdown dan tombol keluar tidak pernah macet
-    bindGlobalDelegation: function() {
-      document.addEventListener("click", function(e) {
-        // Dropdown Profil Terpilih
-        const profileTrigger = e.target.closest("#btn-admin-profile-trigger");
-        const dropdownBox = document.getElementById("box-admin-dropdown");
-        if (profileTrigger) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (dropdownBox) dropdownBox.classList.toggle("hidden");
-          const notifBox = document.getElementById("box-admin-notification");
-          if (notifBox) notifBox.classList.add("hidden");
-          return;
-        }
-
-        // Tombol Keluar / Logout
-        const logoutBtn = e.target.closest("#btn-admin-logout");
-        if (logoutBtn) {
-          e.preventDefault();
-          e.stopPropagation();
-          appEngine.auth.logout();
-          return;
-        }
-
-        // Lonceng Notifikasi
-        const notifTrigger = e.target.closest("#btn-admin-notification");
-        const notifBox = document.getElementById("box-admin-notification");
-        if (notifTrigger) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (notifBox) notifBox.classList.toggle("hidden");
-          if (dropdownBox) dropdownBox.classList.add("hidden");
-          return;
-        }
-
-        // Tombol Sinkronisasi Data Manual
-        const syncBtn = e.target.closest("#btn-admin-sync");
-        if (syncBtn) {
-          e.preventDefault();
-          e.stopPropagation();
-          const targetIcon = document.getElementById("icon-admin-sync");
-          if (targetIcon) targetIcon.classList.add("animate-spin");
-          syncBtn.disabled = true;
-          appEngine.admin.syncData().then(() => {
-            setTimeout(() => {
-              const finalIcon = document.getElementById("icon-admin-sync");
-              if (finalIcon) finalIcon.classList.remove("animate-spin");
-              syncBtn.disabled = false;
-            }, 800);
-          });
-          return;
-        }
-
-        // Tutup Dropdown Jika Klik Area Luar
-        if (dropdownBox && !e.target.closest("#box-admin-dropdown") && !e.target.closest("#btn-admin-profile-trigger")) {
-          dropdownBox.classList.add("hidden");
-        }
-        if (notifBox && !e.target.closest("#box-admin-notification") && !e.target.closest("#btn-admin-notification")) {
-          notifBox.classList.add("hidden");
-        }
-      });
     },
 
     syncData: async function() {
@@ -786,7 +783,6 @@ const appEngine = {
     printTable: function() { window.print(); },
     exportTableCSV: function() { alert('Data Matrix successfully compiled into structural CSV format!'); },
     
-    // REVISI 7.1.3: Parser handal untuk mengubah link Google Drive HTML menjadi Direct Raw Stream secara real-time
     getDirectDriveUrl: function(url) {
       if (!url) return "";
       if (url.includes("drive.google.com")) {
