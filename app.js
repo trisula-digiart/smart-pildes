@@ -1,8 +1,9 @@
 /**
  * ==========================================================
- * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.0
- * Features: Auto simulation mode fallback, decoupling routers, 
- *           multi-tab analytics, and dynamic header component binders.
+ * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1
+ * Features: Auto simulation mode fallback, decoupling routers,
+ *           advanced matrix filters (DPT, Vote Records), and
+ *           base64 media file upload reader pipelines.
  * ==========================================================
  */
 
@@ -30,14 +31,15 @@ const appEngine = {
       if (!localStorage.getItem("sim_app_settings")) {
         localStorage.setItem("sim_app_settings", JSON.stringify({
           nama_calon_kades: "Ahmad Dwi Saputra",
-          drive_id_foto_paslon: "",
+          drive_id_foto_paslon: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150",
           drive_id_banner_login: ""
         }));
       }
       if (!localStorage.getItem("sim_users")) {
         localStorage.setItem("sim_users", JSON.stringify([
           { user_id: "USR-01", username: "admin", password_hash: "admin123", nama_lengkap: "Ahmad Dwi Saputra", role: "ADMIN", status_aktif: "Active" },
-          { user_id: "USR-02", username: "timses1", password_hash: "timses123", nama_lengkap: "Rahmat Lapangan", role: "TIMSES", status_aktif: "Active" }
+          { user_id: "USR-02", username: "timses1", password_hash: "timses123", nama_lengkap: "Rahmat Lapangan", role: "TIMSES", status_aktif: "Active" },
+          { user_id: "USR-03", username: "timses2", password_hash: "timses123", nama_lengkap: "Budi Wijaya", role: "TIMSES", status_aktif: "Active" }
         ]));
       }
       if (!localStorage.getItem("sim_data_dpt")) {
@@ -52,7 +54,8 @@ const appEngine = {
       if (!localStorage.getItem("sim_warga_voters")) {
         localStorage.setItem("sim_warga_voters", JSON.stringify([
           { voter_id: "VTR-01", nik: "3201010101010005", klasifikasi: "PRO", input_by_user_id: "USR-02", created_at: new Date().toISOString() },
-          { voter_id: "VTR-02", nik: "3201010101010001", klasifikasi: "PRO", input_by_user_id: "USR-02", created_at: new Date().toISOString() }
+          { voter_id: "VTR-02", nik: "3201010101010001", klasifikasi: "KONTRA", input_by_user_id: "USR-02", created_at: new Date().toISOString() },
+          { voter_id: "VTR-03", nik: "3201010101010004", klasifikasi: "RAGU-RAGU", input_by_user_id: "USR-03", created_at: new Date().toISOString() }
         ]));
       }
     }
@@ -112,9 +115,12 @@ const appEngine = {
             nik: v.nik,
             nama: d.nama_warga || "Tidak Terdaftar",
             dusun: d.dusun || "-",
+            rt: d.rt || "-",
+            rw: d.rw || "-",
             rt_rw: `RT ${d.rt || '-'} / RW ${d.rw || '-'}`,
             klasifikasi: v.klasifikasi,
             input_by: u.nama_lengkap || "Sistem",
+            input_by_user_id: v.input_by_user_id,
             created_at: v.created_at
           };
         });
@@ -152,8 +158,31 @@ const appEngine = {
             pro_percentage: dpt.length > 0 ? ((proCount / dpt.length) * 100).toFixed(1) : "0.0"
           },
           voters: votersList,
-          zoning: Object.keys(zoneMap).map(k => zoneMap[k])
+          zoning: Object.keys(zoneMap).map(k => zoneMap[k]),
+          dptMaster: dpt,
+          timsesList: users.filter(u => u.role === "TIMSES")
         };
+
+      case "updateBranding":
+        settings.nama_calon_kades = payload.nama_calon_kades;
+        if(payload.photoBase64) settings.drive_id_foto_paslon = payload.photoBase64;
+        if(payload.bannerBase64) settings.drive_id_banner_login = payload.bannerBase64;
+        localStorage.setItem("sim_app_settings", JSON.stringify(settings));
+        return { status: "success", message: "Branding simulasi diperbarui lokal!" };
+
+      case "registerTimses":
+        const newTimses = {
+          user_id: "USR-" + (users.length + 1),
+          username: payload.username,
+          password_hash: payload.password,
+          nama_lengkap: payload.nama,
+          role: "TIMSES",
+          status_aktif: "Active"
+        };
+        users.push(newTimses);
+        localStorage.setItem("sim_users", JSON.stringify(users));
+        return { status: "success", message: "Petugas Lapangan berhasil didaftarkan!" };
+
       default:
         return { status: "error", message: "Unknown action" };
     }
@@ -219,7 +248,18 @@ const appEngine = {
           e.preventDefault();
           appEngine.auth.submit(e);
         });
-        console.log("⚡ TRISULA KERNEL: Form login dinamis berhasil dikunci.");
+        
+        // Load dynamically saved login branding banner if present
+        appEngine.request("getBranding").then(res => {
+          if(res && res.status === "success" && res.branding.drive_id_banner_login) {
+            const leftPanel = document.querySelector(".md\\:flex.md\\:w-1/2");
+            if(leftPanel) {
+              leftPanel.style.backgroundImage = `url('${res.branding.drive_id_banner_login}')`;
+              leftPanel.style.backgroundSize = "cover";
+              leftPanel.style.backgroundPosition = "center";
+            }
+          }
+        });
       } else {
         setTimeout(() => appEngine.auth.bindLoginForm(), 100);
       }
@@ -233,7 +273,6 @@ const appEngine = {
           e.preventDefault();
           appEngine.auth.logout();
         });
-        console.log("⚡ TRISULA KERNEL: Tombol logout dinamis berhasil dikunci.");
       } else {
         setTimeout(() => appEngine.auth.bindTimsesForm(), 100);
       }
@@ -255,7 +294,7 @@ const appEngine = {
       const res = await appEngine.request("login", { username, password });
 
       if (res.status === "success") {
-        localStorage.setItem("pvs_session_v70", JSON.stringify({ token: res.token, user: res.user }));
+        localStorage.setItem("pvs_session_v71", JSON.stringify({ token: res.token, user: res.user }));
         appEngine.session.user = res.user;
         appEngine.router.loadView(res.user.role);
       } else {
@@ -272,7 +311,7 @@ const appEngine = {
     },
 
     checkSession: function() {
-      const stored = localStorage.getItem("pvs_session_v70");
+      const stored = localStorage.getItem("pvs_session_v71");
       if (stored) {
         const sessionData = JSON.parse(stored);
         appEngine.session.user = sessionData.user;
@@ -283,7 +322,7 @@ const appEngine = {
     },
 
     logout: function() {
-      localStorage.removeItem("pvs_session_v70");
+      localStorage.removeItem("pvs_session_v71");
       appEngine.session.user = null;
       appEngine.router.loadView("login");
     }
@@ -298,7 +337,6 @@ const appEngine = {
         modeBadge.innerText = this.isSimulation ? "MODE SIMULASI (OFFLINE)" : "LIVE SYNC ACTIVE";
       }
 
-      // Jalankan pengikatan elemen header admin secara memori
       this.bindHeaderInteractions();
 
       const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
@@ -307,25 +345,36 @@ const appEngine = {
         this.renderMetrics(res.metrics);
         this.renderTPSRecapTable(res.zoning);
         this.renderZoningChart(res.metrics);
+        this.populateFilterDropdowns(res);
         this.renderAnalyticsTable();
+        
+        // Form Populate Branding Name
+        const nameInput = document.getElementById("setting-candidate-name");
+        if(nameInput && res.branding) {
+          nameInput.value = res.branding.nama_calon_kades || "";
+          document.getElementById("hero-candidate-banner").innerText = `BERSAMA KITA SUKSESKAN PILKADES DAMAI - ${res.branding.nama_calon_kades.toUpperCase()}`;
+          if(res.branding.drive_id_foto_paslon) {
+            document.getElementById("admin-profile-img").src = res.branding.drive_id_foto_paslon;
+          }
+        }
       }
     },
 
     bindHeaderInteractions: function() {
-      // 1. Pengikatan Tombol Keluar Sistem Admin
       const logoutBtn = document.getElementById("btn-admin-logout");
       if (logoutBtn) {
-        logoutBtn.addEventListener("click", function(e) {
+        logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+        document.getElementById("btn-admin-logout").addEventListener("click", function(e) {
           e.preventDefault();
           appEngine.auth.logout();
         });
       }
 
-      // Pemicu Buka Tutup Dropdown Profil
       const profileTrigger = document.getElementById("btn-admin-profile-trigger");
       const dropdownBox = document.getElementById("box-admin-dropdown");
       if (profileTrigger && dropdownBox) {
-        profileTrigger.addEventListener("click", function(e) {
+        profileTrigger.replaceWith(profileTrigger.cloneNode(true));
+        document.getElementById("btn-admin-profile-trigger").addEventListener("click", function(e) {
           e.stopPropagation();
           dropdownBox.classList.toggle("hidden");
           const notifBox = document.getElementById("box-admin-notification");
@@ -333,87 +382,61 @@ const appEngine = {
         });
       }
 
-      // 2. Pengikatan Tombol Lonceng Notifikasi
       const notifTrigger = document.getElementById("btn-admin-notification");
       const notifBox = document.getElementById("box-admin-notification");
       if (notifTrigger && notifBox) {
-        notifTrigger.addEventListener("click", function(e) {
+        notifTrigger.replaceWith(notifTrigger.cloneNode(true));
+        document.getElementById("btn-admin-notification").addEventListener("click", function(e) {
           e.stopPropagation();
           notifBox.classList.toggle("hidden");
           if (dropdownBox) dropdownBox.classList.add("hidden");
         });
       }
 
-      // 3. Pengikatan Tombol Sinkronisasi Data
       const syncBtn = document.getElementById("btn-admin-sync");
       const syncIcon = document.getElementById("icon-admin-sync");
       if (syncBtn) {
-        syncBtn.addEventListener("click", async function(e) {
+        syncBtn.replaceWith(syncBtn.cloneNode(true));
+        const finalSyncBtn = document.getElementById("btn-admin-sync");
+        finalSyncBtn.addEventListener("click", async function(e) {
           e.preventDefault();
           if (syncIcon) syncIcon.classList.add("animate-spin");
-          syncBtn.disabled = true;
-          
+          finalSyncBtn.disabled = true;
           await appEngine.admin.syncData();
-          
           setTimeout(() => {
             if (syncIcon) syncIcon.classList.remove("animate-spin");
-            syncBtn.disabled = false;
+            finalSyncBtn.disabled = false;
           }, 800);
         });
       }
 
-      // Penutup otomatis dropdown jika klik di luar area
       document.addEventListener("click", function() {
-        if (dropdownBox) dropdownBox.classList.add("hidden");
-        if (notifBox) notifBox.classList.add("hidden");
+        const drop = document.getElementById("box-admin-dropdown");
+        const boxN = document.getElementById("box-admin-notification");
+        if (drop) drop.classList.add("hidden");
+        if (boxN) boxN.classList.add("hidden");
       });
     },
 
-    syncData: async function() {
-      const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
-      if (res.status === "success") {
-        appEngine.session.dbCache = res;
-        this.renderMetrics(res.metrics);
-        this.renderTPSRecapTable(res.zoning);
-        this.renderZoningChart(res.metrics);
-        this.renderAnalyticsTable();
+    syncData: async function() { await this.initDashboard(); },
+
+    populateFilterDropdowns: function(data) {
+      const rtrwSelect = document.getElementById("filter-select-rtrw");
+      const timsesSelect = document.getElementById("filter-select-timses");
+      if(!rtrwSelect) return;
+
+      rtrwSelect.innerHTML = `<option value="ALL">Semua Wilayah RT/RW</option>`;
+      const uniqueZones = [...new Set(data.zoning.map(z => z.zone))];
+      uniqueZones.forEach(z => {
+        rtrwSelect.innerHTML += `<option value="${z}">${z}</option>`;
+      });
+
+      if(timsesSelect && data.timsesList) {
+        timsesSelect.innerHTML = `<option value="ALL">Semua Petugas Timses</option>`;
+        data.timsesList.forEach(t => {
+          timsesSelect.innerHTML += `<option value="${t.user_id}">${t.nama_lengkap}</option>`;
+        });
       }
-    },
-
-    renderMetrics: function(metrics) {
-      document.getElementById("stat-total-dpt").innerText = metrics.total_dpt;
-      document.getElementById("stat-total-voters").innerText = metrics.total_terdata;
-      document.getElementById("stat-realcount-progress").innerText = metrics.pro_percentage + "%";
-    },
-
-    renderTPSRecapTable: function(zoning) {
-      const tbody = document.querySelector("#table-rekap-tps tbody");
-      if (!tbody) return;
-      tbody.innerHTML = "";
-      zoning.forEach(zone => {
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-            <td class="p-3 font-bold text-slate-800">${zone.zone}</td>
-            <td class="p-3 text-center">${zone.dpt}</td>
-            <td class="p-3 text-center text-emerald-600 font-black">${zone.pro}</td>
-            <td class="p-3 text-center text-slate-700">${zone.kontra}</td>
-            <td class="p-3 text-center text-slate-700">${zone.ragu}</td>
-          </tr>`;
-      });
-    },
-
-    renderZoningChart: function(metrics) {
-      const canvas = document.getElementById("chart-real-count-admin");
-      if (!canvas) return;
-      if (window.myPVSChart) window.myPVSChart.destroy();
-      window.myPVSChart = new Chart(canvas.getContext("2d"), {
-        type: "doughnut",
-        data: {
-          labels: ["PRO", "KONTRA", "RAGU-RAGU"],
-          datasets: [{ data: [metrics.pro, metrics.kontra, metrics.ragu], backgroundColor: ["#0B192C", "#EF4444", "#F59E0B"] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
     },
 
     switchSubTab: function(subTabId) {
@@ -426,6 +449,26 @@ const appEngine = {
       const activeBtn = document.getElementById(`subtab-btn-${subTabId.replace('subtab-', '')}`);
       if (activeBtn) {
         activeBtn.className = "sub-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl transition shadow-sm bg-navy-dark text-gold";
+      }
+
+      // Hide or show dynamic visibility layout filtering elements
+      const boxKK = document.getElementById("filter-box-kk");
+      const boxVote = document.getElementById("filter-box-vote");
+      const boxTimses = document.getElementById("filter-box-timses");
+      const matrixRow = document.getElementById("filter-matrix-row");
+
+      if (matrixRow) matrixRow.classList.remove("hidden");
+
+      if (subTabId === "subtab-dpt") {
+        if(boxKK) boxKK.classList.remove("hidden");
+        if(boxVote) boxVote.classList.add("hidden");
+        if(boxTimses) boxTimses.classList.add("hidden");
+      } else if (subTabId === "subtab-voter-records") {
+        if(boxKK) boxKK.classList.add("hidden");
+        if(boxVote) boxVote.classList.remove("hidden");
+        if(boxTimses) boxTimses.classList.remove("hidden");
+      } else {
+        if(matrixRow) matrixRow.classList.add("hidden");
       }
       
       this.renderAnalyticsTable();
@@ -440,34 +483,153 @@ const appEngine = {
       if (!cachedData) return;
 
       body.innerHTML = "";
+      const selectedZone = document.getElementById("filter-select-rtrw").value;
 
+      // REVISI PENAMBAHAN 1: TAB DATA DPT DENGAN FILTERISASI RT/RW & NOMOR KK
       if (this.activeSubTab === "subtab-dpt") {
-        head.innerHTML = `<tr><th class="p-3">Nama Warga</th><th class="p-3">NIK</th><th class="p-3">Dusun</th><th class="p-3 text-center">RT/RW</th></tr>`;
-        if (this.isSimulation) {
-          const dptList = JSON.parse(localStorage.getItem("sim_data_dpt")) || [];
-          dptList.forEach(item => {
-            body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${item.nama_warga}</td><td class="p-3 font-mono">${item.nik}</td><td class="p-3">${item.dusun}</td><td class="p-3 text-center">RT ${item.rt} / RW ${item.rw}</td></tr>`;
-          });
-        }
+        head.innerHTML = `<tr><th class="p-3">Nama Warga</th><th class="p-3">NIK</th><th class="p-3">Nomor KK</th><th class="p-3">Dusun - RT/RW</th></tr>`;
+        const filterKK = document.getElementById("filter-input-kk").value.trim().toLowerCase();
+        
+        let filteredDPT = cachedData.dptMaster || [];
+        filteredDPT.forEach(item => {
+          const zoneKey = `${item.dusun} - RT ${item.rt} / RW ${item.rw}`;
+          if (selectedZone !== "ALL" && zoneKey !== selectedZone) return;
+          if (filterKK !== "" && !item.no_kk.toLowerCase().includes(filterKK)) return;
+
+          body.innerHTML += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+              <td class="p-3 font-bold text-slate-800">${item.nama_warga}</td>
+              <td class="p-3 font-mono text-slate-500">${item.nik}</td>
+              <td class="p-3 font-mono text-slate-700 font-bold">${item.no_kk}</td>
+              <td class="p-3">${zoneKey}</td>
+            </tr>`;
+        });
       } 
-      else if (this.activeSubTab === "subtab-rt-rw") {
-        head.innerHTML = `<tr><th class="p-3">Zonasi Dusun RT/RW</th><th class="p-3 text-center">Target DPT</th><th class="p-3 text-center text-emerald-600">PRO</th><th class="p-3 text-center text-red-500">KONTRA</th></tr>`;
-        cachedData.zoning.forEach(z => {
-          body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${z.zone}</td><td class="p-3 text-center">${z.dpt}</td><td class="p-3 text-center text-emerald-600 font-black">${z.pro}</td><td class="p-3 text-center text-red-500">${z.kontra}</td></tr>`;
+      // REVISI PENAMBAHAN 2: TAB HASIL PEREKAMAN SUARA TIMSES + FILTER STATUS, TIMSES, & RT/RW
+      else if (this.activeSubTab === "subtab-voter-records") {
+        head.innerHTML = `<tr><th class="p-3">Nama Warga Pemilih</th><th class="p-3">NIK</th><th class="p-3 text-center">Orientasi</th><th class="p-3">Zonasi RT/RW</th><th class="p-3">Petugas Lapangan</th></tr>`;
+        const selectedVote = document.getElementById("filter-select-vote").value;
+        const selectedTimses = document.getElementById("filter-select-timses").value;
+
+        cachedData.voters.forEach(v => {
+          const zoneKey = `${v.dusun} - RT ${v.rt} / RW ${v.rw}`;
+          if (selectedZone !== "ALL" && zoneKey !== selectedZone) return;
+          if (selectedVote !== "ALL" && v.klasifikasi !== selectedVote) return;
+          if (selectedTimses !== "ALL" && v.input_by_user_id !== selectedTimses) return;
+
+          let badgeColor = "bg-amber-100 text-amber-700";
+          if (v.klasifikasi === "PRO") badgeColor = "bg-emerald-100 text-emerald-800 font-black";
+          if (v.klasifikasi === "KONTRA") badgeColor = "bg-red-100 text-red-700";
+
+          body.innerHTML += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+              <td class="p-3 font-bold text-slate-800">${v.nama}</td>
+              <td class="p-3 font-mono text-slate-500">${v.nik}</td>
+              <td class="p-3 text-center"><span class="px-2.5 py-1 rounded-md text-[10px] ${badgeColor}">${v.klasifikasi}</span></td>
+              <td class="p-3">${zoneKey}</td>
+              <td class="p-3 font-semibold text-navy-light"><i class="fa-solid fa-user-check mr-1 text-gold"></i>${v.input_by}</td>
+            </tr>`;
         });
       }
-      else if (this.activeSubTab === "subtab-kk") {
-        head.innerHTML = `<tr><th class="p-3">Nomor KK</th><th class="p-3">Nama Anggota Keluarga</th><th class="p-3 text-center">Hubungan</th></tr>`;
-        body.innerHTML = `<tr class="border-b"><td class="p-3 font-mono">3201010102020001</td><td class="p-3 font-bold">Supardi Santoso, Siti Maimunah</td><td class="p-3 text-center bg-slate-50 text-xs rounded-lg">Struktur Keluarga Inti</td></tr>`;
+      else if (this.activeSubTab === "subtab-rt-rw") {
+        head.innerHTML = `<tr><th class="p-3">Zonasi Dusun RT/RW</th><th class="p-3 text-center">Target DPT</th><th class="p-3 text-center text-emerald-600">PRO</th><th class="p-3 text-center text-red-500">KONTRA</th><th class="p-3 text-center text-amber-600">RAGU</th></tr>`;
+        cachedData.zoning.forEach(z => {
+          body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${z.zone}</td><td class="p-3 text-center">${z.dpt}</td><td class="p-3 text-center text-emerald-600 font-black">${z.pro}</td><td class="p-3 text-center text-red-500">${z.kontra}</td><td class="p-3 text-center text-amber-600">${z.ragu}</td></tr>`;
+        });
       }
       else if (this.activeSubTab === "subtab-performance") {
         head.innerHTML = `<tr><th class="p-3">Nama Petugas Lapangan</th><th class="p-3 text-center">Total Input Suara</th><th class="p-3 text-center">Status Keaktifan</th></tr>`;
-        body.innerHTML = `<tr class="border-b"><td class="p-3 font-bold">Rahmat Lapangan (timses1)</td><td class="p-3 text-center font-black text-navy-dark">2 Data Warga</td><td class="p-3 text-center"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">ACTIVE LIVE</span></td></tr>`;
+        if(cachedData.timsesList) {
+          cachedData.timsesList.forEach(t => {
+            const count = cachedData.voters.filter(v => v.input_by_user_id === t.user_id).length;
+            body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${t.nama_lengkap} (${t.username})</td><td class="p-3 text-center font-black text-navy-dark">${count} Data Pemilih</td><td class="p-3 text-center"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">ACTIVE LIVE</span></td></tr>`;
+          });
+        }
       }
       else if (this.activeSubTab === "subtab-unvisited") {
         head.innerHTML = `<tr><th class="p-3">Nama Warga Belum Dikunjungi</th><th class="p-3">NIK</th><th class="p-3">TPS Ringkasan</th></tr>`;
-        body.innerHTML = `<tr class="border-b"><td class="p-3 font-bold text-slate-500">Slamet Junaidi</td><td class="p-3 font-mono">3201010101010003</td><td class="p-3 font-bold">TPS-01 (Dusun Krajan)</td></tr>`;
+        const visitedNIKs = cachedData.voters.map(v => v.nik);
+        const unvisited = cachedData.dptMaster.filter(d => !visitedNIKs.includes(d.nik));
+        
+        unvisited.forEach(item => {
+          body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold text-slate-500">${item.nama_warga}</td><td class="p-3 font-mono">${item.nik}</td><td class="p-3 font-bold">TPS-${item.tps_id} (${item.dusun})</td></tr>`;
+        });
       }
+    },
+
+    // REVISI PERBAIKAN 3: SAVE SETTINGS BRANDING (TERMASUK PIPELINE BASE64 MEDIA READER)
+    saveSettings: async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btn-save-settings");
+      const alertBox = document.getElementById("settings-alert");
+      if(btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-1"></i> Menyimpan...`; }
+
+      const kadesName = document.getElementById("setting-candidate-name").value.trim();
+      const filePhoto = document.getElementById("setting-candidate-photo").files[0];
+      const fileBanner = document.getElementById("setting-candidate-banner").files[0];
+
+      const toBase64 = file => new Promise((resolve, reject) => {
+        if(!file) return resolve(null);
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+
+      try {
+        const photoBase64 = await toBase64(filePhoto);
+        const bannerBase64 = await toBase64(fileBanner);
+
+        const res = await appEngine.request("updateBranding", {
+          token: appEngine.session.user.token,
+          nama_calon_kades: kadesName,
+          photoBase64: photoBase64,
+          bannerBase64: bannerBase64
+        });
+
+        if(alertBox) {
+          alertBox.className = `p-3 rounded-xl text-xs font-bold mb-2 ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-500'}`;
+          alertBox.innerHTML = res.message;
+          alertBox.classList.remove("hidden");
+        }
+        
+        if(res.status === "success") { appEngine.admin.syncData(); }
+      } catch (err) {
+        console.error("Upload handler runtime failed:", err);
+      } finally {
+        if(btn) { btn.disabled = false; btn.innerHTML = `<span>SIMPAN PERUBAHAN BRANDING</span><i class="fa-solid fa-floppy-disk ml-1"></i>`; }
+      }
+    },
+
+    // REVISI PERBAIKAN 3: REGISTRASI TIMSES YANG BISA AKSES APLIKASI
+    submitRegister: async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btn-submit-timses");
+      const alertBox = document.getElementById("register-alert");
+      if(btn) { btn.disabled = true; }
+
+      const nama = document.getElementById("reg-name").value.trim();
+      const username = document.getElementById("reg-username").value.trim();
+      const password = document.getElementById("reg-password").value.trim();
+
+      const res = await appEngine.request("registerTimses", {
+        token: appEngine.session.user.token,
+        nama: nama,
+        username: username,
+        password: password
+      });
+
+      if(alertBox) {
+        alertBox.className = `p-3 rounded-xl text-xs font-bold mb-4 ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-500'}`;
+        alertBox.innerHTML = res.message;
+        alertBox.classList.remove("hidden");
+      }
+
+      if(res.status === "success") {
+        document.getElementById("form-register-timses").reset();
+        appEngine.admin.syncData();
+      }
+      if(btn) { btn.disabled = false; }
     }
   },
 
