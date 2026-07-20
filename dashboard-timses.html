@@ -1,0 +1,97 @@
+<!-- Component Payload Template - Mobile First Dashboard Form Spec for Field Operation -->
+<div class="flex-1 flex flex-col w-full max-w-md mx-auto bg-slate-50 shadow-lg min-h-screen relative pb-16">
+  
+  <!-- Mobile Shell Header Panel -->
+  <header class="bg-navy-dark text-white p-4 flex items-center justify-between border-b-2 border-gold sticky top-0 z-40">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg bg-gold text-navy-dark font-extrabold flex items-center justify-center text-sm">T</div>
+      <div>
+        <h1 class="font-bold text-sm tracking-wide" id="timses-header-title">FIELD WORKER PANEL</h1>
+        <p class="text-[10px] text-slate-400" id="timses-profile-name">Petugas Lapangan</p>
+      </div>
+    </div>
+    <button onclick="appEngine.auth.logout()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 hover:bg-red-900 hover:text-white transition flex items-center justify-center text-xs">
+      <i class="fa-solid fa-power-off"></i>
+    </button>
+  </header>
+
+  <!-- Mobile Form Dynamic Work Space Container -->
+  <main class="flex-1 p-4 space-y-5">
+    
+    <!-- Toast Alert Box System -->
+    <div id="field-alert" class="hidden p-4 rounded-xl text-xs font-semibold shadow-sm"></div>
+
+    <!-- 1. CONDITION ENGINE VIEW: Standard Voter Classification Inputs (For Role Timses) -->
+    <section id="pane-timses-voter" class="space-y-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm space-y-4">
+        <div class="border-b border-slate-100 pb-2">
+          <h2 class="text-sm font-bold text-navy-dark uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-address-card text-gold"></i> Validasi NIK DPT Lapangan</h2>
+          <p class="text-[11px] text-slate-400 mt-0.5">Lakukan verifikasi NIK warga secara rigid sebelum melakukan pemetaan pilihan.</p>
+        </div>
+        
+        <form id="form-voter-submission" onsubmit="appEngine.field.submitVoter(event)" class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1.5">Nomor Induk Kependudukan (NIK)</label>
+            <input type="number" id="field-voter-nik" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 text-sm tracking-widest [appearance:textfield] [&::-webkit-outer-spin-button]:margin-0 [&::-webkit-inner-spin-button]:margin-0" placeholder="16 digit NIK DPT">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1.5">Klasifikasi Orientasi Dukungan</label>
+            <select id="field-voter-class" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 text-sm">
+              <option value="" disabled selected>Pilih Klasifikasi...</option>
+              <option value="Pro" class="text-emerald-600 font-semibold">Pro (Pendukung Calon Kita)</option>
+              <option value="Kontra" class="text-red-600 font-semibold">Kontra (Pendukung Lawan)</option>
+              <option value="Ragu-ragu" class="text-amber-600 font-semibold">Ragu-ragu / Swing Voters</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full py-3 bg-navy-dark hover:bg-navy-light text-gold font-bold text-xs tracking-wider rounded-xl shadow-md transition duration-200 transform active:scale-95 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-cloud-arrow-up"></i> VERIFIKASI & SIMPAN DATA
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 2. CONDITION ENGINE VIEW: Real Count Inputs (For Role Saksi) -->
+    <section id="pane-saksi-realcount" class="hidden space-y-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm space-y-4">
+        <div class="border-b border-slate-100 pb-2">
+          <h2 class="text-sm font-bold text-navy-dark uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-square-poll-horizontal text-gold"></i> Form Input C1 Real Count</h2>
+          <p class="text-[11px] text-slate-400 mt-0.5">Input jumlah fisik perolehan suara dari form C1 plano hasil perhitungan TPS.</p>
+        </div>
+
+        <form id="form-realcount-submission" onsubmit="appEngine.field.submitRealCount(event)" class="space-y-3.5">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Suara Calon Kita</label>
+              <input type="number" id="rc-suara-kita" required min="0" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 text-sm font-bold text-emerald-600">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Suara Lawan 1</label>
+              <input type="number" id="rc-suara-lawan1" required min="0" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 text-sm font-bold text-red-600">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Suara Lawan 2</label>
+              <input type="number" id="rc-suara-lawan2" required min="0" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 text-sm font-bold text-red-600">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-1">Suara Tidak Sah</label>
+              <input type="number" id="rc-suara-rusak" required min="0" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 text-sm font-bold text-slate-600">
+            </div>
+          </div>
+          <button type="submit" id="btn-rc-submit" class="w-full mt-2 py-3 bg-navy-dark hover:bg-navy-light text-gold font-bold text-xs tracking-wider rounded-xl shadow-md transition duration-200 transform active:scale-95 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-lock-open"></i> LAPORKAN & KUNCI SUARA TPS
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Fixed Navigation bar for Mobile Native Feel -->
+  <footer class="absolute bottom-0 inset-x-0 h-14 bg-white border-t border-slate-200 flex items-center justify-around text-slate-400 px-4">
+    <div class="flex flex-col items-center text-navy-dark text-xs font-semibold">
+      <i class="fa-solid fa-folder-plus text-base text-gold"></i>
+      <span class="mt-0.5">Operasional</span>
+    </div>
+  </footer>
+</div>
