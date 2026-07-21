@@ -1,17 +1,17 @@
 <div class="min-h-screen w-full flex flex-col md:flex-row overflow-hidden bg-navy-dark">
   
   <!-- LEFT PANEL: Dynamic Corporate Graphic Banner (Interconnected with Branding Settings) -->
-  <!-- REVISI 7.1.3: Menyematkan id="login-left-banner" serta konfigurasi centering gambar agar foto paslon nampak utuh presisi -->
-  <div id="login-left-banner" class="hidden md:flex md:w-1/2 lg:w-7/12 relative items-center justify-center p-12 bg-gradient-premium overflow-hidden border-r-[5px] border-gold transition-all duration-500 ease-in-out" style="background-size: cover; background-position: center top;">
+  <!-- REVISI 7.1.4: Mengubah background-size menjadi 'contain' dan background-repeat 'no-repeat' agar seluruh area poster/foto paslon tampil utuh presisi tanpa terpotong -->
+  <div id="login-left-banner" class="hidden md:flex md:w-1/2 lg:w-7/12 relative items-center justify-center p-6 lg:p-12 bg-[#0B192C] overflow-hidden border-r-[5px] border-gold transition-all duration-500 ease-in-out" style="background-size: contain; background-repeat: no-repeat; background-position: center;">
     <!-- Background Grid Overlay (Hanya aktif jika gambar branding kosong) -->
-    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px]"></div>
+    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
     
     <!-- Floating Luxury Blur Vector Lights -->
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
     
     <!-- Branding Context Info -->
-    <!-- REVISI 7.1.3: Menyematkan id="login-overlay-content" agar teks bawaan ini auto-hidden ketika banner dari Google Drive terpasang -->
+    <!-- Menyematkan id="login-overlay-content" agar teks bawaan ini auto-hidden ketika banner dari Google Drive terpasang -->
     <div id="login-overlay-content" class="relative z-10 max-w-lg text-left space-y-6">
       <div class="inline-flex items-center gap-2.5 px-4 py-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full">
         <i class="fa-solid fa-crown text-gold text-xs"></i>
