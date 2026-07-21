@@ -91,7 +91,6 @@
             <div class="w-10 h-10 rounded-xl border border-gold p-0.5 shadow-sm bg-white overflow-hidden shrink-0">
               <img id="admin-profile-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150" alt="Avatar" class="w-full h-full object-cover rounded-xl">
             </div>
-            <!-- REVISI 2: Perbaikan Event loss pada drop-down arrow -->
             <i id="dropdown-arrow-icon" class="fa-solid fa-chevron-down text-xs text-slate-400 group-hover:text-slate-600 transition"></i>
             
             <div id="box-admin-dropdown" class="hidden absolute right-0 top-14 w-52 bg-white border border-slate-100 rounded-xl shadow-xl p-2 text-left z-50">
@@ -109,7 +108,7 @@
         <button onclick="this.parentElement.classList.add('hidden')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <!-- CONTENT WORKSPACE (REVISI 3: FLUID WIDESCREEN & EXPANDED TEXT FOR WIDE MONITORS) -->
+      <!-- CONTENT WORKSPACE -->
       <div class="p-6 sm:p-10 flex-1 space-y-8 w-full px-6 sm:px-12 lg:px-16 mx-auto">
         
         <!-- SECTION 1: OVERVIEW -->
@@ -294,12 +293,41 @@
                   </div>
                   <div>
                     <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Upload Banner Sistem (Login)</label>
-                    <input type="file" id="setting-candidate-banner" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-amber-50 file:text-amber-800 hover:file:bg-amber-100 cursor-pointer">
-                    <p class="text-[9px] text-slate-400 mt-1.5">Mengganti grafis backdrop sisi kiri login.</p>
+                    <input type="file" id="setting-candidate-banner" accept="image/*" onchange="appEngine.cropper.handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-amber-50 file:text-amber-800 hover:file:bg-amber-100 cursor-pointer">
+                    <p class="text-[9px] text-slate-400 mt-1.5">Pilih foto untuk mengaktifkan Kanvas Crop Interactive di bawah.</p>
                   </div>
                 </div>
 
-                <button type="submit" id="btn-save-settings" class="py-3 px-6 bg-gradient-gold text-navy-dark font-black text-xs tracking-widest rounded-xl transition shadow-lg transform active:scale-95 flex items-center gap-2">
+                <!-- REVISI 8.6: KANVAS INTERAKTIF LIVE MOCKUP PREVIEW HALAMAN LOGIN -->
+                <div id="cropper-container-wrapper" class="hidden border border-slate-200 rounded-2xl p-4 bg-slate-900 space-y-3">
+                  <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-gold flex items-center gap-1.5">
+                      <i class="fa-solid fa-up-down-left-right"></i> Live Mockup Banner Login (Geser & Zoom)
+                    </span>
+                    <button type="button" onclick="appEngine.cropper.reset()" class="text-[10px] font-bold text-slate-400 hover:text-white transition">
+                      <i class="fa-solid fa-rotate-left mr-1"></i> Reset Posisi
+                    </button>
+                  </div>
+
+                  <!-- Frame Simulator Halaman Login (Kotak Presisi) -->
+                  <div class="relative w-full h-[320px] bg-[#0B192C] rounded-xl overflow-hidden cursor-grab active:cursor-grabbing border border-gold/30 shadow-inner" id="cropper-viewport">
+                    <canvas id="cropper-canvas" class="w-full h-full block"></canvas>
+                    
+                    <!-- Overlay petunjuk posisi aman -->
+                    <div class="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[9px] text-slate-300 font-semibold pointer-events-none flex items-center gap-2">
+                      <i class="fa-solid fa-hand-pointer text-gold animate-bounce"></i> Click & Drag Gambar Untuk Menggeser
+                    </div>
+                  </div>
+
+                  <!-- Kontrol Slider Zoom -->
+                  <div class="flex items-center gap-3 pt-1">
+                    <i class="fa-solid fa-magnifying-glass-minus text-slate-400 text-xs"></i>
+                    <input type="range" id="cropper-zoom-slider" min="0.2" max="3" step="0.05" value="1" oninput="appEngine.cropper.setZoom(this.value)" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-gold">
+                    <i class="fa-solid fa-magnifying-glass-plus text-slate-400 text-xs"></i>
+                  </div>
+                </div>
+
+                <button type="submit" id="btn-save-settings" class="py-3.5 px-6 bg-gradient-gold text-navy-dark font-black text-xs tracking-widest rounded-xl transition shadow-lg transform active:scale-95 flex items-center gap-2">
                   <span>SIMPAN PERUBAHAN BRANDING</span><i class="fa-solid fa-floppy-disk"></i>
                 </button>
               </form>
