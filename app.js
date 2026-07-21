@@ -1,10 +1,10 @@
 /**
  * ==========================================================
- * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.4
- * Features: Auto simulation mode fallback, decoupling routers,
- *           advanced matrix filters (DPT, Vote Records),
- *           indestructible global click event delegation, 
- *           and automatic Google Drive direct-link stream converter.
+ * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.5
+ * Features: Indestructible global event delegation (Logout priority),
+ *           Robust token-session restoration,
+ *           Direct Google Drive image stream converter,
+ *           Comprehensive DPT/Vote Matrix Filter Engine.
  * ==========================================================
  */
 
@@ -21,8 +21,8 @@ const appEngine = {
 
   init: async function() {
     this.checkDatabaseFallback();
+    this.bindGlobalDelegation();
     this.auth.checkSession();
-    this.bindGlobalDelegation(); // Berhasil dipanggil dengan aman karena sudah di root level
   },
 
   checkDatabaseFallback: function() {
@@ -203,15 +203,27 @@ const appEngine = {
         localStorage.setItem("sim_users", JSON.stringify(users));
         return { status: "success", message: "Petugas Lapangan berhasil didaftarkan!" };
 
+      case "getBranding":
+        return { status: "success", branding: settings };
+
       default:
         return { status: "error", message: "Unknown action" };
     }
   },
 
-  // Dipindahkan ke tingkat akar objek (root level) agar bebas dipanggil oleh init()
+  // PREVIEW EVENT DELEGATION GLOBAL: Tombol Logout dideteksi paling awal
   bindGlobalDelegation: function() {
     document.addEventListener("click", function(e) {
-      // Dropdown Profil Terpilih
+      // 1. PRIORITAS TERTINGGI: Tombol Keluar Sistem / Logout
+      const logoutBtn = e.target.closest("#btn-admin-logout");
+      if (logoutBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        appEngine.auth.logout();
+        return;
+      }
+
+      // 2. Dropdown Trigger Profil
       const profileTrigger = e.target.closest("#btn-admin-profile-trigger");
       const dropdownBox = document.getElementById("box-admin-dropdown");
       if (profileTrigger) {
@@ -223,16 +235,7 @@ const appEngine = {
         return;
       }
 
-      // Tombol Keluar / Logout
-      const logoutBtn = e.target.closest("#btn-admin-logout");
-      if (logoutBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-        appEngine.auth.logout();
-        return;
-      }
-
-      // Lonceng Notifikasi
+      // 3. Trigger Notifikasi Lonceng
       const notifTrigger = e.target.closest("#btn-admin-notification");
       const notifBox = document.getElementById("box-admin-notification");
       if (notifTrigger) {
@@ -243,7 +246,7 @@ const appEngine = {
         return;
       }
 
-      // Tombol Sinkronisasi Data Manual
+      // 4. Tombol Sinkronisasi Data Manual
       const syncBtn = e.target.closest("#btn-admin-sync");
       if (syncBtn) {
         e.preventDefault();
@@ -261,7 +264,7 @@ const appEngine = {
         return;
       }
 
-      // Tutup Dropdown Jika Klik Area Luar
+      // 5. Auto Close Dropdowns saat klik di luar area
       if (dropdownBox && !e.target.closest("#box-admin-dropdown") && !e.target.closest("#btn-admin-profile-trigger")) {
         dropdownBox.classList.add("hidden");
       }
@@ -333,7 +336,7 @@ const appEngine = {
         });
         
         appEngine.request("getBranding").then(res => {
-          if(res && res.status === "success" && res.branding.drive_id_banner_login) {
+          if(res && res.status === "success" && res.branding && res.branding.drive_id_banner_login) {
             const leftPanel = document.getElementById("login-left-banner");
             const overlayContent = document.getElementById("login-overlay-content");
             if(leftPanel) {
@@ -402,17 +405,24 @@ const appEngine = {
     checkSession: function() {
       const stored = localStorage.getItem("pvs_session_v71");
       if (stored) {
-        const sessionData = JSON.parse(stored);
-        appEngine.session.user = { ...sessionData.user, token: sessionData.token };
-        appEngine.router.loadView(sessionData.user.role);
-      } else {
-        appEngine.router.loadView("login");
+        try {
+          const sessionData = JSON.parse(stored);
+          if (sessionData && sessionData.user && sessionData.token) {
+            appEngine.session.user = { ...sessionData.user, token: sessionData.token };
+            appEngine.router.loadView(sessionData.user.role);
+            return;
+          }
+        } catch(err) {
+          console.error("Session parse error:", err);
+        }
       }
+      appEngine.router.loadView("login");
     },
 
     logout: function() {
       localStorage.removeItem("pvs_session_v71");
       appEngine.session.user = null;
+      appEngine.session.dbCache = null;
       appEngine.router.loadView("login");
     }
   },
@@ -423,7 +433,13 @@ const appEngine = {
     initDashboard: async function() {
       const modeBadge = document.getElementById("system-mode-badge");
       if (modeBadge) {
-        modeBadge.innerText = this.isSimulation ? "MODE SIMULASI (OFFLINE)" : "LIVE SYNC ACTIVE";
+        modeBadge.innerText = appEngine.isSimulation ? "MODE SIMULASI (OFFLINE)" : "LIVE SYNC ACTIVE";
+      }
+
+      if (!appEngine.session.user || !appEngine.session.user.token) {
+        console.warn("Session token lost, redirecting to login.");
+        appEngine.auth.logout();
+        return;
       }
 
       const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
@@ -438,7 +454,10 @@ const appEngine = {
         const nameInput = document.getElementById("setting-candidate-name");
         if(nameInput && res.branding) {
           nameInput.value = res.branding.nama_calon_kades || "";
-          document.getElementById("hero-candidate-banner").innerText = `BERSAMA KITA SUKSESKAN PILKADES DAMAI - ${res.branding.nama_calon_kades.toUpperCase()}`;
+          const bannerText = document.getElementById("hero-candidate-banner");
+          if (bannerText) {
+            bannerText.innerText = `BERSAMA KITA SUKSESKAN PILKADES DAMAI - ${res.branding.nama_calon_kades.toUpperCase()}`;
+          }
           if(res.branding.drive_id_foto_paslon) {
             const directPhotoUrl = appEngine.utils.getDirectDriveUrl(res.branding.drive_id_foto_paslon);
             const adminProfileImg = document.getElementById("admin-profile-img");
@@ -447,10 +466,18 @@ const appEngine = {
             }
           }
         }
+      } else {
+        console.error("Dashboard fetch error:", res.message);
+        // Jika token ditolak oleh GAS karena reset Script Properties, paksa logout bersih
+        if (res.message && res.message.includes("Akses ditolak")) {
+          alert("Sesi akses server telah diperbarui. Silakan login kembali untuk memperbarui token Anda.");
+          appEngine.auth.logout();
+        }
       }
     },
 
     syncData: async function() {
+      if (!appEngine.session.user || !appEngine.session.user.token) return;
       const res = await appEngine.request("getAdminDashboard", { token: appEngine.session.user.token });
       if (res.status === "success") {
         appEngine.session.dbCache = res;
@@ -463,14 +490,18 @@ const appEngine = {
     },
 
     renderMetrics: function(metrics) {
-      document.getElementById("stat-total-dpt").innerText = metrics.total_dpt;
-      document.getElementById("stat-total-voters").innerText = metrics.total_terdata;
-      document.getElementById("stat-realcount-progress").innerText = metrics.pro_percentage + "%";
+      if (!metrics) return;
+      const elDpt = document.getElementById("stat-total-dpt");
+      const elVoters = document.getElementById("stat-total-voters");
+      const elProgress = document.getElementById("stat-realcount-progress");
+      if (elDpt) elDpt.innerText = metrics.total_dpt;
+      if (elVoters) elVoters.innerText = metrics.total_terdata;
+      if (elProgress) elProgress.innerText = metrics.pro_percentage + "%";
     },
 
     renderTPSRecapTable: function(zoning) {
       const tbody = document.querySelector("#table-rekap-tps tbody");
-      if (!tbody) return;
+      if (!tbody || !zoning) return;
       tbody.innerHTML = "";
       zoning.forEach(zone => {
         tbody.innerHTML += `
@@ -486,7 +517,7 @@ const appEngine = {
 
     renderZoningChart: function(metrics) {
       const canvas = document.getElementById("chart-real-count-admin");
-      if (!canvas) return;
+      if (!canvas || !metrics || typeof Chart === "undefined") return;
       if (window.myPVSChart) window.myPVSChart.destroy();
       window.myPVSChart = new Chart(canvas.getContext("2d"), {
         type: "doughnut",
@@ -501,7 +532,7 @@ const appEngine = {
     populateFilterDropdowns: function(data) {
       const rtrwSelect = document.getElementById("filter-select-rtrw");
       const timsesSelect = document.getElementById("filter-select-timses");
-      if(!rtrwSelect) return;
+      if(!rtrwSelect || !data || !data.zoning) return;
 
       rtrwSelect.innerHTML = `<option value="ALL">Semua Wilayah RT/RW</option>`;
       const uniqueZones = [...new Set(data.zoning.map(z => z.zone))];
@@ -560,7 +591,8 @@ const appEngine = {
       if (!cachedData) return;
 
       body.innerHTML = "";
-      const selectedZone = document.getElementById("filter-select-rtrw").value;
+      const selectRtrwEl = document.getElementById("filter-select-rtrw");
+      const selectedZone = selectRtrwEl ? selectRtrwEl.value : "ALL";
 
       if (this.activeSubTab === "subtab-dpt") {
         head.innerHTML = `<tr><th class="p-3">Nama Warga</th><th class="p-3">NIK</th><th class="p-3">Nomor KK</th><th class="p-3">Dusun - RT/RW</th></tr>`;
@@ -583,10 +615,12 @@ const appEngine = {
       } 
       else if (this.activeSubTab === "subtab-voter-records") {
         head.innerHTML = `<tr><th class="p-3">Nama Warga Pemilih</th><th class="p-3">NIK</th><th class="p-3 text-center">Orientasi</th><th class="p-3">Zonasi RT/RW</th><th class="p-3">Petugas Lapangan</th></tr>`;
-        const selectedVote = document.getElementById("filter-select-vote").value;
-        const selectedTimses = document.getElementById("filter-select-timses").value;
+        const selectVoteEl = document.getElementById("filter-select-vote");
+        const selectTimsesEl = document.getElementById("filter-select-timses");
+        const selectedVote = selectVoteEl ? selectVoteEl.value : "ALL";
+        const selectedTimses = selectTimsesEl ? selectTimsesEl.value : "ALL";
 
-        cachedData.voters.forEach(v => {
+        (cachedData.voters || []).forEach(v => {
           const zoneKey = `${v.dusun} - RT ${v.rt} / RW ${v.rw}`;
           if (selectedZone !== "ALL" && zoneKey !== selectedZone) return;
           if (selectedVote !== "ALL" && v.klasifikasi !== selectedVote) return;
@@ -608,7 +642,7 @@ const appEngine = {
       }
       else if (this.activeSubTab === "subtab-rt-rw") {
         head.innerHTML = `<tr><th class="p-3">Zonasi Dusun RT/RW</th><th class="p-3 text-center">Target DPT</th><th class="p-3 text-center text-emerald-600">PRO</th><th class="p-3 text-center text-red-500">KONTRA</th><th class="p-3 text-center text-amber-600">RAGU</th></tr>`;
-        cachedData.zoning.forEach(z => {
+        (cachedData.zoning || []).forEach(z => {
           body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${z.zone}</td><td class="p-3 text-center">${z.dpt}</td><td class="p-3 text-center text-emerald-600 font-black">${z.pro}</td><td class="p-3 text-center text-red-500">${z.kontra}</td><td class="p-3 text-center text-amber-600">${z.ragu}</td></tr>`;
         });
       }
@@ -616,15 +650,15 @@ const appEngine = {
         head.innerHTML = `<tr><th class="p-3">Nama Petugas Lapangan</th><th class="p-3 text-center">Total Input Suara</th><th class="p-3 text-center">Status Keaktifan</th></tr>`;
         if(cachedData.timsesList) {
           cachedData.timsesList.forEach(t => {
-            const count = cachedData.voters.filter(v => v.input_by_user_id === t.user_id).length;
+            const count = (cachedData.voters || []).filter(v => v.input_by_user_id === t.user_id).length;
             body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold">${t.nama_lengkap} (${t.username})</td><td class="p-3 text-center font-black text-navy-dark">${count} Data Pemilih</td><td class="p-3 text-center"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">ACTIVE LIVE</span></td></tr>`;
           });
         }
       }
       else if (this.activeSubTab === "subtab-unvisited") {
         head.innerHTML = `<tr><th class="p-3">Nama Warga Belum Dikunjungi</th><th class="p-3">NIK</th><th class="p-3">TPS Ringkasan</th></tr>`;
-        const visitedNIKs = cachedData.voters.map(v => v.nik);
-        const unvisited = cachedData.dptMaster.filter(d => !visitedNIKs.includes(d.nik));
+        const visitedNIKs = (cachedData.voters || []).map(v => v.nik);
+        const unvisited = (cachedData.dptMaster || []).filter(d => !visitedNIKs.includes(d.nik));
         
         unvisited.forEach(item => {
           body.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition"><td class="p-3 font-bold text-slate-500">${item.nama_warga}</td><td class="p-3 font-mono">${item.nik}</td><td class="p-3 font-bold">TPS-${item.tps_id} (${item.dusun})</td></tr>`;
@@ -633,7 +667,7 @@ const appEngine = {
     },
 
     submitNewDPT: async function(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const btn = document.getElementById("btn-save-dpt");
       const alertBox = document.getElementById("modal-dpt-alert");
       if(btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`; }
@@ -665,9 +699,11 @@ const appEngine = {
 
       if (res.status === "success") {
         setTimeout(() => {
-          document.getElementById("form-add-dpt").reset();
-          document.getElementById("modal-add-dpt").classList.add("hidden");
-          alertBox.classList.add("hidden");
+          const form = document.getElementById("form-add-dpt");
+          if (form) form.reset();
+          const modal = document.getElementById("modal-add-dpt");
+          if (modal) modal.classList.add("hidden");
+          if (alertBox) alertBox.classList.add("hidden");
           appEngine.admin.syncData();
         }, 1200);
       }
@@ -676,7 +712,7 @@ const appEngine = {
     },
 
     saveSettings: async function(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const btn = document.getElementById("btn-save-settings");
       const alertBox = document.getElementById("settings-alert");
       if(btn) { btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-1"></i> Menyimpan...`; }
@@ -719,7 +755,7 @@ const appEngine = {
     },
 
     submitRegister: async function(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const btn = document.getElementById("btn-submit-timses");
       const alertBox = document.getElementById("register-alert");
       if(btn) { btn.disabled = true; }
@@ -742,7 +778,8 @@ const appEngine = {
       }
 
       if(res.status === "success") {
-        document.getElementById("form-register-timses").reset();
+        const form = document.getElementById("form-register-timses");
+        if (form) form.reset();
         appEngine.admin.syncData();
       }
       if(btn) { btn.disabled = false; }
@@ -763,7 +800,11 @@ const appEngine = {
       const nik = document.getElementById("field-voter-nik").value;
       const klasifikasi = document.getElementById("field-voter-class").value;
 
-      const res = await appEngine.request("submitVoter", { nik, klasifikasi });
+      const res = await appEngine.request("submitVoter", { 
+        token: appEngine.session.user ? appEngine.session.user.token : "",
+        nik, 
+        klasifikasi 
+      });
 
       if (alertBox) {
         alertBox.className = `p-4 rounded-2xl text-xs font-extrabold mb-4 shadow-sm ${res.status === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`;
@@ -774,7 +815,8 @@ const appEngine = {
       }
 
       if (res.status === "success") {
-        document.getElementById("form-voter-submission").reset();
+        const form = document.getElementById("form-voter-submission");
+        if (form) form.reset();
       }
     }
   },
