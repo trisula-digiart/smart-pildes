@@ -1,9 +1,10 @@
 /**
  * ==========================================================
- * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.6
+ * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.7
  * Features: Indestructible global event delegation (Logout priority),
  *           Robust token-session restoration,
- *           Direct Google Drive image stream converter (Contain Mode),
+ *           Interactive Live Mockup Banner Cropper/Positioner Engine,
+ *           Direct Google Drive image stream converter,
  *           Comprehensive DPT/Vote Matrix Filter Engine.
  * ==========================================================
  */
@@ -342,7 +343,6 @@ const appEngine = {
             if(leftPanel) {
               const directUrl = appEngine.utils.getDirectDriveUrl(res.branding.drive_id_banner_login);
               leftPanel.style.backgroundImage = `url('${directUrl}')`;
-              // REVISI 7.1.6: Disetel 'contain' & 'no-repeat' agar poster paslon utuh 100% tanpa terpotong
               leftPanel.style.backgroundSize = "contain";
               leftPanel.style.backgroundRepeat = "no-repeat";
               leftPanel.style.backgroundPosition = "center";
@@ -720,7 +720,6 @@ const appEngine = {
 
       const kadesName = document.getElementById("setting-candidate-name").value.trim();
       const filePhoto = document.getElementById("setting-candidate-photo").files[0];
-      const fileBanner = document.getElementById("setting-candidate-banner").files[0];
 
       const toBase64 = file => new Promise((resolve, reject) => {
         if(!file) return resolve(null);
@@ -732,7 +731,12 @@ const appEngine = {
 
       try {
         const photoBase64 = await toBase64(filePhoto);
-        const bannerBase64 = await toBase64(fileBanner);
+        
+        // REVISI 8.6: Ambil hasil potong/posisi banner dari Interactive Cropper jika ada
+        let bannerBase64 = null;
+        if (appEngine.cropper.image) {
+          bannerBase64 = appEngine.cropper.getCroppedBase64();
+        }
 
         const res = await appEngine.request("updateBranding", {
           token: appEngine.session.user.token,
@@ -784,6 +788,120 @@ const appEngine = {
         appEngine.admin.syncData();
       }
       if(btn) { btn.disabled = false; }
+    }
+  },
+
+  // REVISI 8.6: INTERACTIVE LIVE CROPPER & POSITIONER ENGINE FOR LOGIN BANNER
+  cropper: {
+    canvas: null,
+    ctx: null,
+    image: null,
+    scale: 1,
+    posX: 0,
+    posY: 0,
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+
+    initCanvas: function() {
+      this.canvas = document.getElementById("cropper-canvas");
+      if (!this.canvas) return;
+      this.ctx = this.canvas.getContext("2d");
+      
+      const viewport = document.getElementById("cropper-viewport");
+      this.canvas.width = viewport.clientWidth || 500;
+      this.canvas.height = viewport.clientHeight || 320;
+
+      // Event listener Drag & Touch pada Kanvas
+      this.canvas.addEventListener("mousedown", (e) => this.startDrag(e));
+      window.addEventListener("mousemove", (e) => this.drag(e));
+      window.addEventListener("mouseup", () => this.endDrag());
+
+      this.canvas.addEventListener("touchstart", (e) => this.startDrag(e.touches[0]));
+      window.addEventListener("touchmove", (e) => this.drag(e.touches[0]));
+      window.addEventListener("touchend", () => this.endDrag());
+    },
+
+    handleFileSelect: function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        this.image = new Image();
+        this.image.onload = () => {
+          const wrapper = document.getElementById("cropper-container-wrapper");
+          if (wrapper) wrapper.classList.remove("hidden");
+          
+          this.initCanvas();
+          this.reset();
+        };
+        this.image.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+
+    reset: function() {
+      if (!this.image || !this.canvas) return;
+      this.scale = Math.min(this.canvas.width / this.image.width, this.canvas.height / this.image.height);
+      this.posX = (this.canvas.width - this.image.width * this.scale) / 2;
+      this.posY = (this.canvas.height - this.image.height * this.scale) / 2;
+      
+      const slider = document.getElementById("cropper-zoom-slider");
+      if (slider) slider.value = this.scale;
+      
+      this.draw();
+    },
+
+    setZoom: function(val) {
+      if (!this.image) return;
+      const oldScale = this.scale;
+      this.scale = parseFloat(val);
+      
+      // Zoom relatif ke titik tengah kanvas
+      const centerX = this.canvas.width / 2;
+      const centerY = this.canvas.height / 2;
+      this.posX = centerX - (centerX - this.posX) * (this.scale / oldScale);
+      this.posY = centerY - (centerY - this.posY) * (this.scale / oldScale);
+      
+      this.draw();
+    },
+
+    startDrag: function(e) {
+      if (!this.image) return;
+      this.isDragging = true;
+      this.startX = e.clientX - this.posX;
+      this.startY = e.clientY - this.posY;
+    },
+
+    drag: function(e) {
+      if (!this.isDragging || !this.image) return;
+      this.posX = e.clientX - this.startX;
+      this.posY = e.clientY - this.startY;
+      this.draw();
+    },
+
+    endDrag: function() {
+      this.isDragging = false;
+    },
+
+    draw: function() {
+      if (!this.ctx || !this.image) return;
+      this.ctx.fillStyle = "#0B192C";
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+      this.ctx.drawImage(
+        this.image,
+        this.posX,
+        this.posY,
+        this.image.width * this.scale,
+        this.image.height * this.scale
+      );
+    },
+
+    getCroppedBase64: function() {
+      if (!this.canvas || !this.image) return null;
+      return this.canvas.toDataURL("image/jpeg", 0.9);
     }
   },
 
