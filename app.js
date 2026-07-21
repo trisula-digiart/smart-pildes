@@ -1,9 +1,9 @@
 /**
  * ==========================================================
- * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.5
+ * PILKADES VICTORY SYSTEM - CLIENT SIDE ENGINE RUNTIME v7.1.6
  * Features: Indestructible global event delegation (Logout priority),
  *           Robust token-session restoration,
- *           Direct Google Drive image stream converter,
+ *           Direct Google Drive image stream converter (Contain Mode),
  *           Comprehensive DPT/Vote Matrix Filter Engine.
  * ==========================================================
  */
@@ -211,7 +211,7 @@ const appEngine = {
     }
   },
 
-  // PREVIEW EVENT DELEGATION GLOBAL: Tombol Logout dideteksi paling awal
+  // EVENT DELEGATION GLOBAL: Tombol Logout dideteksi paling awal
   bindGlobalDelegation: function() {
     document.addEventListener("click", function(e) {
       // 1. PRIORITAS TERTINGGI: Tombol Keluar Sistem / Logout
@@ -342,8 +342,10 @@ const appEngine = {
             if(leftPanel) {
               const directUrl = appEngine.utils.getDirectDriveUrl(res.branding.drive_id_banner_login);
               leftPanel.style.backgroundImage = `url('${directUrl}')`;
-              leftPanel.style.backgroundSize = "cover";
-              leftPanel.style.backgroundPosition = "center top";
+              // REVISI 7.1.6: Disetel 'contain' & 'no-repeat' agar poster paslon utuh 100% tanpa terpotong
+              leftPanel.style.backgroundSize = "contain";
+              leftPanel.style.backgroundRepeat = "no-repeat";
+              leftPanel.style.backgroundPosition = "center";
               
               if (overlayContent) {
                 overlayContent.classList.add("hidden");
@@ -468,7 +470,6 @@ const appEngine = {
         }
       } else {
         console.error("Dashboard fetch error:", res.message);
-        // Jika token ditolak oleh GAS karena reset Script Properties, paksa logout bersih
         if (res.message && res.message.includes("Akses ditolak")) {
           alert("Sesi akses server telah diperbarui. Silakan login kembali untuk memperbarui token Anda.");
           appEngine.auth.logout();
